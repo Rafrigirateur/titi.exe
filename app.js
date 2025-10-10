@@ -14,8 +14,8 @@ import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore 
 
 // Create an express app
 const app = express();
-// Get port, or default to 3000
-const PORT = process.env.PORT || 3000;
+// Get port, or default to 7778
+const PORT = process.env.PORT || 7778;
 // To keep track of our active games
 const lastPerduTimes = {};
 
