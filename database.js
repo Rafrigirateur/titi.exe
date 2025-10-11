@@ -68,6 +68,13 @@ export async function getLeaderboard(limit = 10) {
   return rows;
 }
 
+// Retourne le top des joueurs classés par score
+export async function getMessages(limit = 10) {
+  const db = await dbPromise;
+  const rows = await db.all('SELECT user_id, score FROM scores ORDER BY score DESC LIMIT ?', limit);
+  return rows;
+}
+
 
 // database.js
 export async function addMessage(userId, type, message) {
