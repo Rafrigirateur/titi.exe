@@ -89,6 +89,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             });
         }
         const score = await incrementScore(authorId);
+        con
         lastPerduTimes[authorId] = timeKey; 
         return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -97,7 +98,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           components: [
             {
               type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `${String(heure)}h${String(minute_txt)} ${await happyTiti()} !!! t'as perdu ${await getScore(authorId)} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
+              content: `${String(heure)}h${String(minute_txt)} ${await happyTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
             }
           ]
         },

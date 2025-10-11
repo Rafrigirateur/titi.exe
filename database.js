@@ -17,22 +17,46 @@ export async function initDB() {
       score INTEGER DEFAULT 0
     );
   `);
+  // ✅ Nouvelle table pour le logging des scores
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS score_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      old_score INTEGER NOT NULL,
+      new_score INTEGER NOT NULL,
+      change_time DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
   console.log("✅ Base de données initialisée");
+}
+
+// Fonction utilitaire pour logger le changement de score
+async function logScoreChange(userId, oldScore, newScore) {
+  const db = await dbPromise;
+  await db.run(
+    'INSERT INTO score_logs (user_id, old_score, new_score) VALUES (?, ?, ?)',
+    [userId, oldScore, newScore]
+  );
 }
 
 // Ajoute ou incrémente le score d’un utilisateur
 export async function incrementScore(userId) {
   const db = await dbPromise;
-  const existing = await db.get('SELECT * FROM scores WHERE user_id = ?', userId);
+  const existing = await db.get('SELECT score FROM scores WHERE user_id = ?', userId);
+  
+  const oldScore = existing ? existing.score : 0;
+  const newScore = oldScore + 1;
 
   if (existing) {
     await db.run('UPDATE scores SET score = score + 1 WHERE user_id = ?', userId);
   } else {
     await db.run('INSERT INTO scores (user_id, score) VALUES (?, 1)', userId);
   }
+  
+  // 📝 Log du changement de score
+  await logScoreChange(userId, oldScore, newScore);
 
-  const updated = await db.get('SELECT score FROM scores WHERE user_id = ?', userId);
-  return updated.score;
+  return newScore;
 }
 
 // Récupère le score d’un utilisateur
@@ -45,13 +69,22 @@ export async function getScore(userId) {
 // Définit un score manuellement (et crée l’utilisateur si besoin)
 export async function setScore(userId, newScore) {
   const db = await dbPromise;
+  
+  // Récupère l'ancien score pour le log
+  const existing = await db.get('SELECT score FROM scores WHERE user_id = ?', userId);
+  const oldScore = existing ? existing.score : 0;
+  const finalNewScore = newScore; // Le score défini est le nouveau score
+
   await db.run(
     `INSERT INTO scores (user_id, score)
      VALUES (?, ?)
      ON CONFLICT(user_id)
      DO UPDATE SET score = excluded.score`,
-    [userId, newScore]
+    [userId, finalNewScore]
   );
+  
+  // 📝 Log du changement de score
+  await logScoreChange(userId, oldScore, finalNewScore);
 }
 
 // Récupère tous les utilisateurs
