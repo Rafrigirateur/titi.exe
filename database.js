@@ -156,3 +156,14 @@ export async function getMessagesByType(type) {
   const rows = await db.all(`SELECT content FROM messages WHERE type = ?`, [type]);
   return rows.map(r => r.content);
 }
+
+// 🔍 Récupère tous les logs de score
+export async function getScoreLogs(limit = 100) {
+  const db = await dbPromise;
+  // Sélectionne les logs et les trie du plus récent au plus ancien
+  const rows = await db.all(
+    'SELECT user_id, old_score, new_score, change_time FROM score_logs ORDER BY change_time DESC LIMIT ?', 
+    limit
+  );
+  return rows;
+}
