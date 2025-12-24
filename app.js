@@ -59,6 +59,11 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      */
     if (name === 'perdu') {
       var now = new Date();
+
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // Les mois commencent à 0
+      const day = String(now.getDate()).padStart(2, '0');
+
       var heure = now.getHours(); // pour adapter à un fuseau horraire
       heure  %= 24; //pour les heures supérieures à 23
       var minute = now.getMinutes();
@@ -73,12 +78,13 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       // Pour être sûr d’avoir l’ID dans les deux cas :
       const authorId = userId || dmUserId;
 
+      const dayKey = `${year}-${month}-${day}_${heure}:${minute}`;
       const timeKey = `${heure}:${minute}`; // ex: '12:12'
       const lastKey = lastPerduTimes[authorId];
 
 
       if (heure == minute){ //faire en sorte d'éviter de pouvoir spamm
-        if (lastKey === timeKey) {
+        if (lastKey === dayKey) {
             // L'utilisateur a déjà réclamé son point pendant cette minute
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -89,7 +95,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             });
         }
         const score = await incrementScore(authorId);
-        lastPerduTimes[authorId] = timeKey;
+        lastPerduTimes[authorId] = dayKey; // Met à jour le temps de la dernière réclamation
         return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -111,7 +117,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           components: [
             {
               type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `Il est ${String(heure)}h${String(minute_txt)} <@${userId}>${await ragebaitTiti()} 😁` //Créer la fonction !!!
+              content: `Il est ${String(heure)}h${String(minute_txt)} <@${authorId}>${await ragebaitTiti()} 😁` //Créer la fonction !!!
             }
           ]
         },
