@@ -251,7 +251,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             components: [
               {
                 type: MessageComponentTypes.TEXT_DISPLAY,
-                content: `${String(heure)}h${String(minute_txt)} ${await randomTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
+                content: `${await randomTiti()} 😁`
               }
             ]
           },
