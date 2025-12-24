@@ -59,8 +59,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      */
     if (name === 'perdu') {
       var now = new Date();
-      var heure = now.getHours()+2; // +2 pour le fuseau horaire FR
-      if (heure > 23) {heure = heure - 24}; //pour les heures supérieures à 23
+      var heure = now.getHours(); // pour adapter à un fuseau horraire
+      heure  %= 24; //pour les heures supérieures à 23
       var minute = now.getMinutes();
       var minute_txt = String(now.getMinutes()).padStart(2, '0');
 
@@ -76,7 +76,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       const timeKey = `${heure}:${minute}`; // ex: '12:12'
       const lastKey = lastPerduTimes[authorId];
 
-      
+
       if (heure == minute){ //faire en sorte d'éviter de pouvoir spamm
         if (lastKey === timeKey) {
             // L'utilisateur a déjà réclamé son point pendant cette minute
@@ -89,8 +89,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             });
         }
         const score = await incrementScore(authorId);
-        con
-        lastPerduTimes[authorId] = timeKey; 
+        lastPerduTimes[authorId] = timeKey;
         return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -241,7 +240,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     if (name === 'suggestion') {
       const userId = req.body.member?.user?.id || req.body.user?.id;
       const now = new Date();
-      var heure = now.getHours()+2; // +2 pour le fuseau horaire FR
+      var heure = now.getHours()+1; // +2 pour le fuseau horaire FR
       if (heure > 23) {heure = heure - 24}; //pour les heures supérieures à 23
       const minute = String(now.getMinutes()).padStart(2, '0');
 
