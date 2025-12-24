@@ -89,6 +89,14 @@ const SETSCORE_COMMAND = {
   contexts: [0, 1, 2],
 }; 
 
+const CITATION = {
+  name: 'citation',
+  description: 'Renvoie une des citations de Tiana, définie en amont par les utilisateurs',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
+
 // Command containing options
 /**
 const CHALLENGE_COMMAND = {

@@ -9,7 +9,7 @@ import {
   verifyKeyMiddleware,
   
 } from 'discord-interactions';
-import { DiscordRequest, ragebaitTiti, happyTiti } from './utils.js';
+import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore } from './database.js';
 
 // Create an express app
@@ -97,17 +97,17 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         const score = await incrementScore(authorId);
         lastPerduTimes[authorId] = dayKey; // Met à jour le temps de la dernière réclamation
         return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-          components: [
-            {
-              type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `${String(heure)}h${String(minute_txt)} ${await happyTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
-            }
-          ]
-        },
-      });
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+            components: [
+              {
+                type: MessageComponentTypes.TEXT_DISPLAY,
+                content: `${String(heure)}h${String(minute_txt)} ${await happyTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
+              }
+            ]
+          },
+        });
 
       } else {
         return res.send({
@@ -241,6 +241,24 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     }
 
     /**
+     * ASKCITATION
+     */
+    if (name === 'citation') {
+      return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+            components: [
+              {
+                type: MessageComponentTypes.TEXT_DISPLAY,
+                content: `${String(heure)}h${String(minute_txt)} ${await randomTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
+              }
+            ]
+          },
+        });
+    }
+
+    /**
      * SUGGESTION
      */
     if (name === 'suggestion') {
@@ -254,16 +272,9 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       const messageOption = data.options.find(o => o.name === 'message')?.value || '';
 
       const MAX_MESSAGE_FOR_ID = 60; 
+      const MAX_LEN_FOR_CITATION = 85; 
 
-      if (messageOption.length > MAX_MESSAGE_FOR_ID) {
-          return res.send({
-              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-              data: {
-                  content: "⚠️ Le message est trop long pour la confirmation par bouton. Veuillez le raccourcir.",
-                  flags: InteractionResponseFlags.EPHEMERAL,
-              },
-          });
-      }
+      
 
 
       // Normaliser le type avant de l'utiliser
@@ -272,6 +283,24 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       const encoded = encodeURIComponent(messageOption);
       const confirmId = `confirm_suggestion_${typeOption}_${encoded}`;
       const cancelId = `cancel_suggestion`;
+
+      if (typeOption === 'citations' && messageOption.length > MAX_LEN_FOR_CITATION) {
+        return res.send({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: {
+                  content: "⚠️ Le message fait plus de "+ MAX_LEN_FOR_CITATION +" charactères. Veuillez le raccourcir.",
+                  flags: InteractionResponseFlags.EPHEMERAL,
+              },
+          });
+      } else if (messageOption.length > MAX_MESSAGE_FOR_ID) {
+          return res.send({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: {
+                  content: "⚠️ Le message est trop long pour la confirmation par bouton. Veuillez le raccourcir.",
+                  flags: InteractionResponseFlags.EPHEMERAL,
+              },
+          });
+      }
 
       if(typeOption ==='insultes') {
         return res.send({
