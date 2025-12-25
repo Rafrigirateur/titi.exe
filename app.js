@@ -9,6 +9,7 @@ import {
   verifyKeyMiddleware,
   
 } from 'discord-interactions';
+import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
 import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore } from './database.js';
 import { tiana } from './santee_mentale.js';
@@ -19,6 +20,46 @@ const app = express();
 const PORT = process.env.PORT || 7778;
 // To keep track of our active games
 const lastPerduTimes = {};
+
+/**
+ * debut test 
+ * */ 
+
+
+// On crée un client léger juste pour la connexion Gateway
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+// Fonction pour mettre à jour le statut
+async function updateDiscordStatus() {
+  if (!client.isReady()) return;
+
+  const mood = tiana.getMood();
+  const health = tiana.getHealth();
+  const emoji = tiana.emojiMood();
+
+  // Exemple : "Regarde Mood: 80% | Santé: 100% 😁"
+  client.user.setPresence({
+    activities: [{ 
+      name: `Mood: ${mood}% | Santé: ${health}% ${emoji}`, 
+      type: ActivityType.Watching 
+    }],
+    status: 'online',
+  });
+}
+
+// Connexion à Discord
+client.once('ready', () => {
+  console.log(`✅ Connecté en tant que ${client.user.tag} pour la gestion du statut.`);
+  updateDiscordStatus(); // Mise à jour immédiate au lancement
+});
+
+// IMPORTANT : Assure-toi que DISCORD_TOKEN est dans ton fichier .env
+client.login(process.env.DISCORD_TOKEN);
+
+
+/**
+ * fin test
+ *  */
 
 initDB();
 
