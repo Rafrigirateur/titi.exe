@@ -54,13 +54,13 @@ export const tiana = {
         return Math.floor(Math.random() * this.maxMood) < this.getMood();
     },
     emojiMood() {
-        if (this.health < this.mood){
+        if (this.health <= this.mood){
             if (this.health >= this.maxHealth * 0.8) return '😁';
             if (this.health >= this.maxHealth * 0.6) return '🥴';
             if (this.health >= this.maxHealth * 0.4) return '🫩';
             if (this.health >= this.maxHealth * 0.2) return '🤒';
             return '🤕';
-        } else if (this.mood < this.health){
+        } else {
             if (this.mood >= this.maxMood * 0.8) return '😁';
             if (this.mood >= this.maxMood * 0.65) return '😌';
             if (this.mood >= this.maxMood * 0.5) return '😕';
