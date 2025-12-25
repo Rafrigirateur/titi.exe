@@ -13,7 +13,6 @@ export const tiana = {
         }
     },
     incrMood(ratio) {
-        this.triggerUpdate();
         if (this.mood + ratio < 0) {
             if (this.health + this.mood + ratio < 0) {
                 this.health = 0;
@@ -30,12 +29,12 @@ export const tiana = {
             return;
         }
         this.mood += ratio;
+        this.triggerUpdate();
     },
     subMood(ratio) {
         this.incrMood(-ratio);
     },
     incrHealth(ratio) {
-        this.triggerUpdate();
         if (this.health + ratio < 0) {
             if (this.mood + this.health + ratio < 0) {
                 this.mood = 0;
@@ -52,6 +51,7 @@ export const tiana = {
             return;
         }
         this.health += ratio;
+        this.triggerUpdate();
     },
     subHealth(ratio) {
         this.incrHealth(-ratio);
