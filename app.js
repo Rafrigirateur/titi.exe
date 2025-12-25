@@ -322,38 +322,23 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * Violences
      */
     if (name === 'violences') {
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          flags: InteractionResponseFlags.EPHEMERAL,
-          content: `La commande violences est en cours de réécriture et sera bientôt disponible. Merci de votre patience !`,
-        },
-      });
 
-      /**
       const typeViolenceOption = data.options.find(o => o.name === 'type')?.value;
 
       if (typeViolenceOption === 'verbales') {
         tiana.subMood(10);
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            type: MessageComponentTypes.TEXT_DISPLAY,
-            content: "Violence verbales",
-          },
-        });
       }
       if (typeViolenceOption === 'physiques') {
         tiana.subHealth(10);
-        return res.send({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            type: MessageComponentTypes.TEXT_DISPLAY,
-            content: "Violences physiques",
-          },
-        });
       }
-         */
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          type: MessageComponentTypes.TEXT_DISPLAY,
+          content: `Ça ne me blesse pas ${tiana.emojiMood()}`,
+        },
+      });
+         
     }
 
     /**
