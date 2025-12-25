@@ -322,6 +322,15 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * Violences
      */
     if (name === 'violences') {
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          flags: InteractionResponseFlags.EPHEMERAL,
+          content: `La commande violences est en cours de réécriture et sera bientôt disponible. Merci de votre patience !`,
+        },
+      });
+
+      /**
       const typeViolenceOption = data.options.find(o => o.name === 'type')?.value;
 
       if (typeViolenceOption === 'verbales') {
@@ -344,6 +353,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           },
         });
       }
+         */
     }
 
     /**
