@@ -46,6 +46,8 @@ async function updateDiscordStatus() {
     status: 'online',
   });
 }
+// On lie la mise à jour du statut aux changements de Tiana
+tiana.onUpdate = updateDiscordStatus;
 
 // Connexion à Discord
 client.once('ready', () => {

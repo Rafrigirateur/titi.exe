@@ -5,9 +5,15 @@ export const tiana = {
     health: 100,
     maxMood: 100,
     maxHealth: 100,
+    onUpdate: null,
 
+    triggerUpdate() {
+        if (this.onUpdate && typeof this.onUpdate === 'function') {
+            this.onUpdate();
+        }
+    },
     incrMood(ratio) {
-        updateDiscordStatus();
+        this.triggerUpdate();
         if (this.mood + ratio < 0) {
             if (this.health + this.mood + ratio < 0) {
                 this.health = 0;
@@ -15,10 +21,12 @@ export const tiana = {
                 this.health += this.mood + ratio;
             }
             this.mood = 0;
+            this.triggerUpdate();
             return;
         }
         if (this.mood + ratio > this.maxMood) {
             this.mood = this.maxMood;
+            this.triggerUpdate();
             return;
         }
         this.mood += ratio;
@@ -27,7 +35,7 @@ export const tiana = {
         this.incrMood(-ratio);
     },
     incrHealth(ratio) {
-        updateDiscordStatus();
+        this.triggerUpdate();
         if (this.health + ratio < 0) {
             if (this.mood + this.health + ratio < 0) {
                 this.mood = 0;
@@ -35,10 +43,12 @@ export const tiana = {
                 this.mood += this.health + ratio;
             }
             this.health = 0;
+            this.triggerUpdate();
             return;
         }
         if (this.health + ratio > this.maxHealth) {
             this.health = this.maxHealth;
+            this.triggerUpdate();
             return;
         }
         this.health += ratio;
