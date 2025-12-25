@@ -97,6 +97,26 @@ const CITATION = {
   contexts: [0, 1, 2],
 };
 
+const VIOLENCES = {
+  name: 'violences',
+  description: 'Permet de se défouler sur Titi.exe à ses dépends',
+  type: 1,
+  options: [
+    {
+      type: 3,
+      name: 'type',
+      description: 'choisis le type de message à ajouter',
+      required: true,
+      choices: [
+        { name: 'verbales', value: 'verbales' },
+        { name: 'physiques', value: 'physiques' },
+      ],
+    },
+  ],
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
+
 // Command containing options
 /**
 const CHALLENGE_COMMAND = {
@@ -117,6 +137,6 @@ const CHALLENGE_COMMAND = {
 };
  */
 
-const ALL_COMMANDS = [PERDU, LEADERBOARD, SETSCORE_COMMAND, SUGGESTION, CITATION];
+const ALL_COMMANDS = [PERDU, LEADERBOARD, SETSCORE_COMMAND, SUGGESTION, CITATION, VIOLENCES];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

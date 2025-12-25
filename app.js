@@ -11,6 +11,7 @@ import {
 } from 'discord-interactions';
 import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore } from './database.js';
+import { tiana } from './santee_mentale.js';
 
 // Create an express app
 const app = express();
@@ -58,44 +59,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * PERDU
      */
     if (name === 'perdu') {
-      var now = new Date();
-
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0'); // Les mois commencent à 0
-      const day = String(now.getDate()).padStart(2, '0');
-
-      var heure = now.getHours(); // pour adapter à un fuseau horraire
-      heure  %= 24; //pour les heures supérieures à 23
-      var minute = now.getMinutes();
-      var minute_txt = String(now.getMinutes()).padStart(2, '0');
-
-      // Si la commande est utilisée dans un serveur (guild)
-      const userId = req.body.member?.user?.id;
-
-      // Si la commande est utilisée dans un DM
-      const dmUserId = req.body.user?.id;
-
-      // Pour être sûr d’avoir l’ID dans les deux cas :
-      const authorId = userId || dmUserId;
-
-      const dayKey = `${year}-${month}-${day}_${heure}:${minute}`;
-      const timeKey = `${heure}:${minute}`; // ex: '12:12'
-      const lastKey = lastPerduTimes[authorId];
-
-
-      if (heure == minute){ //faire en sorte d'éviter de pouvoir spamm
-        if (lastKey === dayKey) {
-            // L'utilisateur a déjà réclamé son point pendant cette minute
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    flags: InteractionResponseFlags.EPHEMERAL, // Réponse visible uniquement par l'utilisateur
-                    content: `Tu as déjà perdu à **${timeKey}** ! Attends la prochaine heure miroir 😁`,
-                },
-            });
-        }
-        const score = await incrementScore(authorId);
-        lastPerduTimes[authorId] = dayKey; // Met à jour le temps de la dernière réclamation
+      if (!tiana.motivation()) {
+        tiana.subMood(1);
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
@@ -103,29 +68,81 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             components: [
               {
                 type: MessageComponentTypes.TEXT_DISPLAY,
-                content: `${String(heure)}h${String(minute_txt)} ${await happyTiti()} !!! t'as perdu ${score} fois 😁` //Ajouter le nombre de fois ou qlq a perdu
+                content: `Je ne suis pas d'humeur à répondre ${tiana.emojiMood()}`
               }
             ]
           },
         });
-
       } else {
-        return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-          components: [
-            {
-              type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `Il est ${String(heure)}h${String(minute_txt)} <@${authorId}>${await ragebaitTiti()} 😁` //Créer la fonction !!!
-            }
-          ]
-        },
-      });
+        var now = new Date();
+
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Les mois commencent à 0
+        const day = String(now.getDate()).padStart(2, '0');
+
+        var heure = now.getHours(); // pour adapter à un fuseau horraire
+        heure  %= 24; //pour les heures supérieures à 23
+        var minute = now.getMinutes();
+        var minute_txt = String(now.getMinutes()).padStart(2, '0');
+
+        // Si la commande est utilisée dans un serveur (guild)
+        const userId = req.body.member?.user?.id;
+
+        // Si la commande est utilisée dans un DM
+        const dmUserId = req.body.user?.id;
+
+        // Pour être sûr d’avoir l’ID dans les deux cas :
+        const authorId = userId || dmUserId;
+
+        const dayKey = `${year}-${month}-${day}_${heure}:${minute}`;
+        const timeKey = `${heure}:${minute}`; // ex: '12:12'
+        const lastKey = lastPerduTimes[authorId];
+
+        lastPerduTimes[authorId] = dayKey; // Peut causer des bugs (jsp encore mdr) :: Met à jour le temps de la dernière réclamation
+
+        if (heure == minute){ //faire en sorte d'éviter de pouvoir spamm
+          if (lastKey === dayKey) {
+              // L'utilisateur a déjà réclamé son point pendant cette minute
+              return res.send({
+                  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                  data: {
+                      flags: InteractionResponseFlags.EPHEMERAL, // Réponse visible uniquement par l'utilisateur
+                      content: `Tu as déjà perdu à **${timeKey}** ! Attends la prochaine heure miroir ${tiana.emojiMood()}`,
+                  },
+              });
+          }
+          const score = await incrementScore(authorId);
+          tiana.incrMood(2); // Augmente l'humeur seulement si ce n'est pas déjà fait pour cette minute
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+              components: [
+                {
+                  type: MessageComponentTypes.TEXT_DISPLAY,
+                  content: `${String(heure)}h${String(minute_txt)}${await happyTiti()} !!! t'as perdu ${score} fois ${tiana.emojiMood()}`
+                }
+              ]
+            },
+          });
+
+        } else {
+          if (lastKey !== dayKey) tiana.incrMood(2); // Augmente l'humeur seulement si ce n'est pas déjà fait pour cette minute
+          return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+            components: [
+              {
+                type: MessageComponentTypes.TEXT_DISPLAY,
+                content: `Il est ${String(heure)}h${String(minute_txt)} <@${authorId}>${await ragebaitTiti()} ${tiana.emojiMood()}` //Créer la fonction !!!
+              }
+            ]
+          },
+        });
+        }
       }
     }
-
-    //Commande Kys
 
     /**
      * LEADERBOARD
@@ -251,11 +268,38 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             components: [
               {
                 type: MessageComponentTypes.TEXT_DISPLAY,
-                content: `${await randomTiti()} 😁`
+                content: `${await randomTiti()} ${tiana.emojiMood()}`
               }
             ]
           },
         });
+    }
+
+    /**
+     * Violences
+     */
+    if (name === 'violences') {
+
+      if (typeOption === 'verbales') {
+        tiana.subMood(10);
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            type: MessageComponentTypes.TEXT_DISPLAY,
+            content: "Violence verbales",
+          },
+        });
+      }
+      if (typeOption === 'physiques') {
+        tiana.subHealth(10);
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            type: MessageComponentTypes.TEXT_DISPLAY,
+            content: "Violences physiques",
+          },
+        });
+      }
     }
 
     /**
@@ -307,7 +351,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           flags: InteractionResponseFlags.EPHEMERAL, // 👈 message visible uniquement par l'utilisateur
-          content: `Il est ${heure}h${minute} <@${userId}> ${messageOption} 😁\nÊtes-vous sûr de vouloir ajouter ce message ?\n`,
+          content: `Il est ${heure}h${minute} <@${userId}> ${messageOption} ${tiana.emojiMood()}\nÊtes-vous sûr de vouloir ajouter ce message ?\n`,
           components: [
             {
               type: 1,
@@ -335,7 +379,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           flags: InteractionResponseFlags.EPHEMERAL, // 👈 message visible uniquement par l'utilisateur
-          content: `${String(heure)}h${String(minute)} ${messageOption} 😁\nÊtes-vous sûr de vouloir ajouter ce message ?\n`,
+          content: `${String(heure)}h${String(minute)} ${messageOption} ${tiana.emojiMood()}\nÊtes-vous sûr de vouloir ajouter ce message ?\n`,
           components: [
             {
               type: 1,
@@ -363,7 +407,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           flags: InteractionResponseFlags.EPHEMERAL, // 👈 message visible uniquement par l'utilisateur
-          content: `${messageOption} 😁\nConfirmer ?`,
+          content: `${messageOption} ${tiana.emojiMood()}\nConfirmer ?`,
           components: [
             {
               type: 1,
@@ -385,8 +429,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           ],
         },
       });
-      }
-      
+      }      
     }
 
     console.error(`unknown command: ${name}`);
@@ -414,12 +457,13 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       const message = decodeURIComponent(encoded);
 
       await addMessage(userId, typeOption, message);
+      tiana.incrMood(10);
 
       return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        type: InteractionResponseType.UPDATE_MESSAGE,
         data: {
-          content: `✅ Message ajouté à la catégorie **${typeOption}** ! Merci <@${userId}> 😄`,
-          flags: InteractionResponseFlags.EPHEMERAL,
+          content: `✅ Message ajouté à la catégorie **${typeOption}** ! Merci <@${userId}> ${tiana.emojiMood()}`,
+          components: [],
         },
       });
     }
@@ -427,10 +471,10 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     // cancel (annulation)
     if (custom_id === 'cancel_suggestion' || custom_id.startsWith('cancel_suggestion_')) {
       return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        type: InteractionResponseType.UPDATE_MESSAGE,
         data: {
           content: '❌ Suggestion annulée.',
-          flags: InteractionResponseFlags.EPHEMERAL,
+          components: [],
         },
       });
     }
