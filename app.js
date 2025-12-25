@@ -279,8 +279,9 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * Violences
      */
     if (name === 'violences') {
+      const typeViolenceOption = data.options.find(o => o.name === 'type')?.value;
 
-      if (typeOption === 'verbales') {
+      if (typeViolenceOption === 'verbales') {
         tiana.subMood(10);
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -290,7 +291,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           },
         });
       }
-      if (typeOption === 'physiques') {
+      if (typeViolenceOption === 'physiques') {
         tiana.subHealth(10);
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
