@@ -347,9 +347,11 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      */
     if (name === 'suggestion') {
       const userId = req.body.member?.user?.id || req.body.user?.id;
+      
       const now = new Date();
-      var heure = now.getHours()+1; // +2 pour le fuseau horaire FR
-      if (heure > 23) {heure = heure - 24}; //pour les heures supérieures à 23
+      
+      var heure = now.getHours(); // +2 pour le fuseau horaire FR
+      heure  %= 24; //pour les heures supérieures à 23
       const minute = String(now.getMinutes()).padStart(2, '0');
 
       const typeOptionRaw = data.options.find(o => o.name === 'type')?.value || 'autre';
