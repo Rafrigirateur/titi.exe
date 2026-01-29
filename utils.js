@@ -54,6 +54,7 @@ export async function getRandomMessage(type) {
     if (type === 'insultes') return ' sale bolos';
     if (type === 'positivitee' || type === 'positivitée') return 'Ouiii'; // ✅ accepte les deux écritures
     if (type === 'citations') return 'Tu ne trouveras jamais l\'amour';
+    if (type === 'violences') return 'Ça ne me blesse pas';
     return 'Message inconnu';
   }
 
