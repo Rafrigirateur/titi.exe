@@ -336,7 +336,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           type: MessageComponentTypes.TEXT_DISPLAY,
-          content: `Ça ne me blesse pas ${tiana.emojiMood()}`,
+          content: `${await hurtTiti()} ${tiana.emojiMood()}`,
         },
       });
          
@@ -472,6 +472,34 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         },
       });
       }      
+      if(typeOption === 'violences') {
+        return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          flags: InteractionResponseFlags.EPHEMERAL, // 👈 message visible uniquement par l'utilisateur
+          content: `${messageOption} ${tiana.emojiMood()}\nConfirmer ?`,
+          components: [
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  label: 'OUI',
+                  style: 3, // vert
+                  custom_id: confirmId,
+                },
+                {
+                  type: 2,
+                  label: 'ANNULER',
+                  style: 4, // rouge
+                  custom_id: cancelId,
+                },
+              ],
+            },
+          ],
+        },
+      });
+      }
     }
 
     console.error(`unknown command: ${name}`);
@@ -494,7 +522,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       }
 
       let typeOption = payload.slice(0, sepIndex);
-      typeOption = normalizeType(typeOption); // Ajoutez cette ligne
+      typeOption = normalizeType(typeOption);
       const encoded = payload.slice(sepIndex + 1);
       const message = decodeURIComponent(encoded);
 

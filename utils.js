@@ -78,6 +78,10 @@ export async function randomTiti() {
   return await getRandomMessage('citations');
 }
 
+export async function hurtTiti() {
+  return await getRandomMessage('violences');
+}
+
 
 // Fonction pour générer la liste de choix des pseudos (pour les menus déroulants)
 export async function getUserChoices() {
