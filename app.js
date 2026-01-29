@@ -10,7 +10,7 @@ import {
   
 } from 'discord-interactions';
 import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
-import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti } from './utils.js';
+import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti, hurtTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore } from './database.js';
 import { tiana } from './santee_mentale.js';
 
