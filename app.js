@@ -353,7 +353,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     if (name === 'violences') {
       const authorId = req.body.member?.user?.id || req.body.user?.id;
       const now = Date.now();
-      const cooldownAmount = 5 * 60 * 1000; // 5 minutes (en millisecondes) - Ajustable !
+      const cooldownAmount = 1 * 60 * 1000; // 5 minutes (en millisecondes) - Ajustable !
 
       // Vérifie si l'utilisateur est en cooldown de violence
       if (lastViolenceTimes[authorId]) {
