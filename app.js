@@ -20,6 +20,8 @@ const app = express();
 const PORT = process.env.PORT || 7778;
 // To keep track of our active games
 const lastPerduTimes = {};
+const lastCitationTimes = {};
+const lastViolenceTimes = {};
 
 /**
  * debut test 
@@ -304,6 +306,32 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * ASKCITATION
      */
     if (name === 'citation') {
+      const authorId = req.body.member?.user?.id || req.body.user?.id;
+      const now = Date.now();
+      const cooldownAmount = 60 * 1000; // 60 secondes en millisecondes (modifie ce nombre pour ajuster le délai)
+
+      // Vérifie si l'utilisateur est dans le dictionnaire et si son délai est écoulé
+      if (lastCitationTimes[authorId]) {
+        const expirationTime = lastCitationTimes[authorId] + cooldownAmount;
+
+        if (now < expirationTime) {
+          const timeLeft = Math.round((expirationTime - now) / 1000);
+          
+          // Réponse éphémère si le délai n'est pas respecté
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: `Doucement ! Laisse Tiana respirer. Réessaie dans **${timeLeft} secondes** ${tiana.emojiMood()}`,
+              flags: InteractionResponseFlags.EPHEMERAL, // Visible uniquement par le spammeur
+            },
+          });
+        }
+      }
+
+      // Si le délai est bon, on met à jour le timestamp de l'utilisateur
+      lastCitationTimes[authorId] = now;
+
+      // On augmente l'humeur et on envoie la citation
       tiana.incrMood(2);
       return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -323,8 +351,40 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * Violences
      */
     if (name === 'violences') {
+      const authorId = req.body.member?.user?.id || req.body.user?.id;
+      const now = Date.now();
+      const cooldownAmount = 5 * 60 * 1000; // 5 minutes (en millisecondes) - Ajustable !
 
-      const typeViolenceOption = data.options.find(o => o.name === 'type')?.value;
+      // Vérifie si l'utilisateur est en cooldown de violence
+      if (lastViolenceTimes[authorId]) {
+        const expirationTime = lastViolenceTimes[authorId] + cooldownAmount;
+
+        if (now < expirationTime) {
+          const timeLeft = Math.round((expirationTime - now) / 1000);
+          const minutesLeft = Math.floor(timeLeft / 60);
+          const secondsLeft = timeLeft % 60;
+          
+          // Formatage du temps restant pour que ce soit plus lisible
+          let timeString = `${timeLeft} secondes`;
+          if (minutesLeft > 0) {
+            timeString = `${minutesLeft} min et ${secondsLeft} s`;
+          }
+
+          return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: `Halte à la violence ! Laisse Tiana se reposer encore **${timeString}** ${tiana.emojiMood()}`,
+              flags: InteractionResponseFlags.EPHEMERAL,
+            },
+          });
+        }
+      }
+
+      // Le délai est respecté, on met à jour l'heure de la dernière violence
+      lastViolenceTimes[authorId] = now;
+
+      // On applique les dégâts
+      const typeViolenceOption = data.options?.find(o => o.name === 'type')?.value;
 
       if (typeViolenceOption === 'verbales') {
         tiana.subMood(10);
@@ -332,14 +392,14 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       if (typeViolenceOption === 'physiques') {
         tiana.subHealth(10);
       }
+
+      // On envoie la réponse
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          type: MessageComponentTypes.TEXT_DISPLAY,
           content: `${await hurtTiti()} ${tiana.emojiMood()}`,
         },
       });
-         
     }
 
     /**
