@@ -205,13 +205,48 @@
         const strikeUsersContainer = document.getElementById('strike-users-container');
         const strikeChannelsContainer = document.getElementById('strike-channels-container');
 
-        function authenticate() {
+        async function authenticate() {
             userPin = pinInput.value.trim();
             if (!userPin) { alert("ERREUR : CODE REQUIS."); return; }
-            showLoading("DÉVERROUILLAGE SÉCURISÉ...");
-            authSection.classList.add('hidden');
-            controlPanel.classList.remove('hidden');
-            initDashboard();
+            
+            showLoading("VÉRIFICATION DES ACCRÉDITATIONS...");
+
+            try {
+                // 1. On interroge le serveur avec le PIN AVANT de masquer l'interface
+                const statusRes = await fetch(`${API_BASE_URL}/status`, {
+                    headers: { 'X-PIN': userPin }
+                });
+
+                // Si le serveur rejette le PIN (Erreur 401)
+                if (!statusRes.ok) throw new Error("CODE D'AUTORISATION INVALIDE");
+
+                const statusData = await statusRes.json();
+
+                // 2. L'accès est validé ! On masque le login et on affiche le panel
+                authSection.classList.add('hidden');
+                controlPanel.classList.remove('hidden');
+                
+                // 3. Initialisation des données
+                isSystemActive = statusData.isActive;
+                selectedChannelIds = new Set(statusData.allowedChannels);
+                
+                if (statusData.uptime) {
+                    systemBootTime = Date.now() - (statusData.uptime * 1000);
+                    startUptimeCounter();
+                }
+
+                updateUIStatus();
+                await fetchRadarData();
+                await fetchLiveTargets(); 
+
+                hideLoading();
+
+            } catch (e) {
+                hideLoading();
+                alert(`ACCÈS REFUSÉ : ${e.message}`);
+                userPin = ''; // On efface le mauvais code en mémoire
+                pinInput.value = ''; // On vide le champ texte
+            }
         }
 
         async function initDashboard() {

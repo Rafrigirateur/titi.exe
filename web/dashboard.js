@@ -17,11 +17,11 @@ function checkPin(req, res, next) {
 }
 
 // Route pour fournir l'état actuel au dashboard
-router.get('/api/status', (req, res) => {
+router.get('/api/status', checkPin, (req, res) => {
     res.json({
         isActive: maledictionManager.isActive,
         allowedChannels: maledictionManager.allowedChannels,
-        uptime: process.uptime() // <-- Envoi de l'uptime du conteneur en secondes
+        uptime: process.uptime()
     });
 });
 
