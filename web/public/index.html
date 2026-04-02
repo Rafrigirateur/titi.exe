@@ -119,10 +119,12 @@
 
     <div id="console-container">
         <div id="header">
-            <div>République Française</div>
-            <div style="font-size: 1.2em; font-weight: bold;">COMMANDEMENT DES FORCES STRATÉGIQUES</div>
-            <div style="color:white">-- CONFIDENTIEL DÉFENSE --</div>
-            <div>PC Jupiter - Système "TITI.EXE"</div>
+            <div style="color: #888;">[ TERMINAL DE CONTRÔLE CENTRAL ]</div>
+            <div style="font-size: 1.4em; font-weight: bold; margin: 5px 0; color: var(--color-danger); text-shadow: var(--glow);">
+                SYSTÈME JUPITER - TITI.EXE
+            </div>
+            <div style="color: white; margin-bottom: 5px;">-- ACCÈS CONFIDENTIEL DÉFENSE --</div>
+            <div id="uptime-display" style="font-size: 0.9em; color: #ffaa00;">UPTIME: EN ATTENTE DE SYNCHRONISATION...</div>
         </div>
 
         <div id="auth-section">
@@ -174,6 +176,8 @@
         let selectedChannelIds = new Set(); 
         let radarChannels = []; 
         let liveTargetsData = [];
+        
+        let systemBootTime = null; // Stocke l'heure de démarrage du bot
 
         // Variables Frappe Manuelle
         let strikeData = { users: [], channels: [] };
@@ -191,6 +195,7 @@
         const selectedContainer = document.getElementById('selected-channels-container');
         const liveTargetsContainer = document.getElementById('live-targets-container');
         const manualStrikeContainer = document.getElementById('manual-strike-container');
+        const uptimeDisplay = document.getElementById('uptime-display');
 
         const radarModal = document.getElementById('radar-modal');
         const modalRadarContainer = document.getElementById('modal-radar-container');
@@ -218,6 +223,12 @@
                 isSystemActive = statusData.isActive;
                 selectedChannelIds = new Set(statusData.allowedChannels);
                 
+                // Lancement du chrono d'Uptime
+                if (statusData.uptime) {
+                    systemBootTime = Date.now() - (statusData.uptime * 1000);
+                    startUptimeCounter();
+                }
+
                 updateUIStatus();
                 await fetchRadarData();
                 await fetchLiveTargets(); // Charge les cibles
@@ -226,6 +237,25 @@
                 alert("CONNEXION AU PC JUPITER PERDUE.");
                 window.location.reload();
             }
+        }
+
+        // --- GESTION DE L'UPTIME ---
+        function startUptimeCounter() {
+            setInterval(() => {
+                if (!systemBootTime) return;
+                const totalSeconds = Math.floor((Date.now() - systemBootTime) / 1000);
+                
+                const d = Math.floor(totalSeconds / (3600 * 24));
+                const h = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                
+                let uptimeStr = "UPTIME : ";
+                if (d > 0) uptimeStr += `${d}J `;
+                uptimeStr += `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                
+                uptimeDisplay.innerText = uptimeStr;
+            }, 1000);
         }
 
         // --- GESTION DES CIBLES ET COMPTE A REBOURS ---
@@ -255,7 +285,6 @@
                 if (!isSystemActive) {
                     statusHtml = '<span style="color:gray;">SYSTÈME EN PAUSE</span>';
                 } else if (target.nextPingTime) {
-                    // On enregistre le timestamp dans l'attribut HTML
                     statusHtml = `<span class="countdown" data-time="${target.nextPingTime}">CALCUL...</span>`;
                 } else {
                     statusHtml = '<span style="color:#ffaa00;">EN ATTENTE DE SECTEUR VERROUILLÉ</span>';
@@ -272,7 +301,6 @@
             });
         }
 
-        // Tâche de fond pour animer le compte à rebours toutes les secondes
         setInterval(() => {
             if (!isSystemActive) return;
             const elements = document.querySelectorAll('.countdown');
@@ -303,9 +331,7 @@
             });
         }, 1000);
 
-        // Rafraîchir les données des cibles toutes les 30s
         setInterval(() => { if (userPin && !document.hidden) fetchLiveTargets(); }, 30000);
-
 
         // --- GESTION RADAR & SECTEURS ---
         async function fetchRadarData() {
@@ -426,7 +452,7 @@
                 if (response.ok) {
                     document.body.style.backgroundColor = "white";
                     setTimeout(() => document.body.style.backgroundColor = "var(--color-bg)", 100);
-                    setTimeout(fetchLiveTargets, 1000); // Met à jour le chronomètre qui va boucler après le tir
+                    setTimeout(fetchLiveTargets, 1000); 
                 } else { const result = await response.json(); alert(`ÉCHEC DU TIR : ${result.error}`); }
             } catch (e) { hideLoading(); alert(`ERREUR DE CONNEXION : ${e.message}`); }
         }
@@ -461,7 +487,7 @@
 
                 if (response.ok) {
                     isSystemActive = newActiveState;
-                    setTimeout(() => { hideLoading(); updateUIStatus(); fetchLiveTargets(); }, 1500); // Actualise les cibles
+                    setTimeout(() => { hideLoading(); updateUIStatus(); fetchLiveTargets(); }, 1500); 
                 }
             } catch (e) { hideLoading(); alert(`ÉCHEC CRITIQUE : ${e.message}`); }
         }
@@ -473,7 +499,7 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
                     body: JSON.stringify({ isActive: isSystemActive, channels: Array.from(selectedChannelIds) })
                 });
-                fetchLiveTargets(); // Met à jour le status de "En attente de salon" à "Calcul..." silencieusement
+                fetchLiveTargets(); 
             } catch (e) {}
         }
 

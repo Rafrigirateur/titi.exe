@@ -20,7 +20,8 @@ function checkPin(req, res, next) {
 router.get('/api/status', (req, res) => {
     res.json({
         isActive: maledictionManager.isActive,
-        allowedChannels: maledictionManager.allowedChannels
+        allowedChannels: maledictionManager.allowedChannels,
+        uptime: process.uptime() // <-- Envoi de l'uptime du conteneur en secondes
     });
 });
 
