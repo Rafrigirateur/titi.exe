@@ -136,6 +136,46 @@ app.get('/dashboard/api/radar', async (req, res) => {
     }
 });
 
+
+app.post('/dashboard/api/force-ping', async (req, res) => {
+    // 1. Sécurité par PIN
+    const userPin = req.headers['x-pin'];
+    if (userPin !== process.env.DASHBOARD_PIN) {
+        return res.status(401).json({ error: 'Accès refusé' });
+    }
+
+    // 2. Vérifier qu'il y a bien des cibles maudites
+    const cursedIds = Array.from(maledictionManager.cursedUsers.keys());
+    if (cursedIds.length === 0) {
+        return res.status(400).json({ error: "Aucune cible n'est actuellement maudite (Utilisez /malediction sur Discord d'abord)." });
+    }
+
+    // 3. Vérifier que le système est allumé avec des salons configurés
+    if (!maledictionManager.isActive || maledictionManager.allowedChannels.length === 0) {
+        return res.status(400).json({ error: "Le système doit être armé avec au moins un secteur verrouillé." });
+    }
+
+    try {
+        // Choix aléatoire d'une cible parmi les maudits, et d'un salon autorisé
+        const targetId = cursedIds[Math.floor(Math.random() * cursedIds.length)];
+        const channelId = maledictionManager.allowedChannels[Math.floor(Math.random() * maledictionManager.allowedChannels.length)];
+        
+        const channel = await client.channels.fetch(channelId);
+        if (channel && channel.isTextBased()) {
+            const message = await randomTiti();
+            // Frappe immédiate avec une alerte spéciale
+            await channel.send(`⚡ **FRAPPE ORBITALE MANUELLE** ⚡\n<@${targetId}> ${message}`);
+            res.json({ success: true, target: targetId });
+        } else {
+            res.status(500).json({ error: "Secteur de tir introuvable ou accès refusé." });
+        }
+    } catch (error) {
+        console.error("Erreur force-ping:", error);
+        res.status(500).json({ error: "Erreur interne du système de tir." });
+    }
+});
+
+
 /**
  * Interactions endpoint URL where Discord will send HTTP requests
  * Parse request body and verifies incoming requests using discord-interactions package

@@ -28,6 +28,7 @@
             align-items: center;
             margin: 0;
             position: relative;
+            transition: background-color 0.1s; /* Pour l'effet de flash */
         }
 
         /* --- EFFET SCANLINE --- */
@@ -86,7 +87,7 @@
             padding: 5px;
             margin-bottom: 10px;
             min-height: 150px;
-            max-height: 35vh; /* Limite la taille pour laisser de la place au bouton d'ajout */
+            max-height: 35vh;
         }
 
         .channel-item {
@@ -105,75 +106,40 @@
 
         .channel-name { font-weight: bold; font-size: 1.1em; padding-right: 30px; }
         
-        .channel-users {
-            font-size: 0.85em;
-            color: #aaa;
-            margin-top: 4px;
-            text-transform: none; 
-        }
+        .channel-users { font-size: 0.85em; color: #aaa; margin-top: 4px; text-transform: none; }
 
-        /* --- BOUTON SUPPRIMER (CROIX) --- */
+        /* --- BOUTON SUPPRIMER --- */
         .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: transparent;
-            border: 1px solid var(--color-danger);
-            color: var(--color-danger);
-            font-family: 'Share Tech Mono', monospace;
-            cursor: pointer;
-            padding: 2px 6px;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.2s;
+            position: absolute; top: 10px; right: 10px;
+            background: transparent; border: 1px solid var(--color-danger);
+            color: var(--color-danger); font-family: 'Share Tech Mono', monospace;
+            cursor: pointer; padding: 2px 6px; font-size: 1em; font-weight: bold; transition: all 0.2s;
         }
         .remove-btn:hover { background: var(--color-danger); color: var(--color-bg); }
 
         /* --- CONTRÔLES --- */
         .radar-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-            flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 5px; flex-shrink: 0;
         }
 
         .radar-btn {
-            background: transparent;
-            border: 1px solid var(--color-text);
-            color: var(--color-text);
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'Share Tech Mono', monospace;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid var(--color-text);
+            color: var(--color-text); padding: 5px 10px;
+            cursor: pointer; font-family: 'Share Tech Mono', monospace; transition: all 0.2s;
         }
         .radar-btn:hover { background: var(--color-danger); color: var(--color-bg); }
 
-        .add-target-btn {
-            width: 100%;
-            border-style: dashed;
-            margin-bottom: 15px;
-            padding: 10px;
-            font-size: 1.1em;
-            flex-shrink: 0;
-        }
+        .add-target-btn { width: 100%; border-style: dashed; margin-bottom: 15px; padding: 10px; font-size: 1.1em; flex-shrink: 0; }
 
         /* --- LE GROS BOUTON --- */
         #fire-button-container { text-align: center; flex-shrink: 0; }
 
         #fire-button {
-            background-color: #330000;
-            border: 4px solid var(--color-danger);
-            color: var(--color-danger);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.8em;
-            font-weight: bold;
-            padding: 15px 30px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: var(--glow);
-            transition: all 0.2s;
-            width: 100%;
+            background-color: #330000; border: 4px solid var(--color-danger);
+            color: var(--color-danger); font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8em; font-weight: bold; padding: 15px 30px; cursor: pointer;
+            text-transform: uppercase; box-shadow: var(--glow); transition: all 0.2s; width: 100%;
         }
 
         #fire-button:hover { background-color: var(--color-danger); color: var(--color-bg); box-shadow: 0 0 20px var(--color-danger); }
@@ -181,61 +147,32 @@
         #fire-button.active-mode { background-color: var(--color-bg); border-color: #444; color: #444; box-shadow: none; }
         #fire-button.active-mode:hover { background-color: #222; }
 
-        /* --- MODAL (FENÊTRE D'AJOUT) --- */
+        /* --- MODAL --- */
         #modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 500;
-            backdrop-filter: blur(3px);
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center;
+            z-index: 500; backdrop-filter: blur(3px);
         }
 
         #modal-content {
-            border: 2px solid var(--color-danger);
-            background: #050000;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            border: 2px solid var(--color-danger); background: #050000;
+            width: 90%; max-width: 600px; max-height: 80vh; display: flex;
+            flex-direction: column; padding: 15px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
         }
 
-        #modal-radar-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            border: 1px solid var(--color-text);
-            background: #0a0000;
-            padding: 5px;
-            margin-top: 10px;
-        }
+        #modal-radar-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-top: 10px; }
 
-        .modal-item {
-            border: 1px dashed #550000;
-            padding: 10px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-        }
+        .modal-item { border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: pointer; display: flex; flex-direction: column; }
         .modal-item:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
         .modal-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); box-shadow: var(--glow); }
         .modal-item.selected .channel-users { color: #330000; font-weight: bold; }
 
-        /* --- FORMULAIRES & UTILITAIRES --- */
+        /* --- FORMULAIRES --- */
         input[type="text"], input[type="password"] {
-            width: 100%;
-            background-color: #1a0000;
-            border: 1px solid var(--color-text);
-            color: var(--color-danger);
-            font-family: 'Share Tech Mono', monospace;
-            padding: 10px;
-            box-sizing: border-box;
-            font-size: 1em;
+            width: 100%; background-color: #1a0000; border: 1px solid var(--color-text);
+            color: var(--color-danger); font-family: 'Share Tech Mono', monospace; padding: 10px; box-sizing: border-box; font-size: 1em;
         }
         input[type="password"] { font-size: 1.2em; text-align: center; letter-spacing: 5px; }
-        input[type="text"]::placeholder { color: #660000; }
         input:focus { outline: none; box-shadow: var(--glow); }
 
         @keyframes blink { 50% { opacity: 0; } }
@@ -243,12 +180,8 @@
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000;
-            font-size: 2em;
-            color: var(--color-danger);
-            text-align: center;
+            background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; font-size: 2em; color: var(--color-danger); text-align: center;
         }
         .loader-text { margin-top: 20px; font-size: 0.6em; color: #aaa; animation: blink 1s infinite;}
     </style>
@@ -303,6 +236,12 @@
 
             <button class="radar-btn add-target-btn" onclick="openModal()">[+] ASSIGNER UNE NOUVELLE CIBLE</button>
 
+            <div id="manual-strike-container" class="hidden" style="margin-bottom: 15px;">
+                <button class="radar-btn" style="width: 100%; border-color: #ffaa00; color: #ffaa00; font-size: 1.2em; padding: 10px; font-weight: bold; background: rgba(255, 170, 0, 0.1);" onclick="forcePing()">
+                    ⚠️ ORDONNER UN TIR MANUEL
+                </button>
+            </div>
+
             <div id="fire-button-container">
                 <button id="fire-button" class="arm-mode" onclick="toggleSystem()">
                     ARMEZ LE SYSTÈME
@@ -312,14 +251,12 @@
     </div>
 
     <script>
-        // --- ÉTAT GLOBAL ---
         const API_BASE_URL = '/dashboard/api';
         let userPin = '';
         let isSystemActive = false;
         let selectedChannelIds = new Set(); 
         let radarChannels = []; 
 
-        // --- ÉLÉMENTS DU DOM ---
         const authSection = document.getElementById('auth-section');
         const controlPanel = document.getElementById('control-panel');
         const pinInput = document.getElementById('pin-input');
@@ -328,13 +265,12 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         const loadingMainText = document.getElementById('loading-main-text');
         
-        // Nouveaux éléments
         const selectedContainer = document.getElementById('selected-channels-container');
         const modalOverlay = document.getElementById('modal-overlay');
         const modalContainer = document.getElementById('modal-radar-container');
         const modalSearchInput = document.getElementById('modal-search-input');
+        const manualStrikeContainer = document.getElementById('manual-strike-container');
 
-        // --- 1. AUTHENTIFICATION ---
         function authenticate() {
             userPin = pinInput.value.trim();
             if (!userPin) { alert("ERREUR : CODE REQUIS."); return; }
@@ -344,7 +280,6 @@
             initDashboard();
         }
 
-        // --- 2. INITIALISATION DU DASHBOARD ---
         async function initDashboard() {
             try {
                 const statusRes = await fetch(`${API_BASE_URL}/status`);
@@ -363,7 +298,6 @@
             }
         }
 
-        // --- 3. BALAYAGE RADAR ---
         async function fetchRadarData() {
             showLoading("BALAYAGE SATELLITE EN COURS...");
             try {
@@ -382,18 +316,14 @@
             }
         }
 
-        // --- 4. AFFICHAGE DES SALONS VERROUILLÉS (VUE PRINCIPALE) ---
         function renderSelectedList() {
             selectedContainer.innerHTML = '';
-
             if (selectedChannelIds.size === 0) {
                 selectedContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUN SECTEUR CIBLÉ. SYSTEME INOFFENSIF.</div>';
                 return;
             }
-
             selectedChannelIds.forEach(id => {
                 const channelData = radarChannels.find(c => c.id === id);
-                
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'channel-item active-target';
 
@@ -404,7 +334,6 @@
                         <button class="remove-btn" onclick="removeChannel('${id}')">X</button>
                     `;
                 } else {
-                    // Si l'ID est sauvegardé mais que le radar ne trouve plus le salon
                     itemDiv.innerHTML = `
                         <div class="channel-name" style="color:gray;">[ZÔNE RADAR INCONNUE]</div>
                         <div class="channel-users">ID: ${id} (Accès potentiellement perdu)</div>
@@ -415,16 +344,13 @@
             });
         }
 
-        // --- 5. GESTION DE LA MODALE ET RECHERCHE ---
         function openModal() {
             modalOverlay.classList.remove('hidden');
-            modalSearchInput.value = ''; // Réinitialise la recherche
+            modalSearchInput.value = '';
             renderModalList();
         }
 
-        function closeModal() {
-            modalOverlay.classList.add('hidden');
-        }
+        function closeModal() { modalOverlay.classList.add('hidden'); }
 
         function renderModalList() {
             modalContainer.innerHTML = '';
@@ -447,7 +373,6 @@
 
             filteredChannels.forEach(channelData => {
                 const isSelected = selectedChannelIds.has(channelData.id);
-                
                 const itemDiv = document.createElement('div');
                 itemDiv.className = `modal-item ${isSelected ? 'selected' : ''}`;
                 itemDiv.onclick = () => toggleChannelSelection(channelData.id);
@@ -457,20 +382,15 @@
                     <div class="channel-users">Cibles exposées : ${channelData.users.join(', ')}</div>
                     ${isSelected ? '<div style="font-size:0.7em; margin-top:5px;">[VERROUILLÉ]</div>' : ''}
                 `;
-
                 modalContainer.appendChild(itemDiv);
             });
         }
 
-        // --- 6. ACTIONS SUR LES SALONS ---
         function toggleChannelSelection(channelId) {
-            if (selectedChannelIds.has(channelId)) {
-                selectedChannelIds.delete(channelId);
-            } else {
-                selectedChannelIds.add(channelId);
-            }
+            if (selectedChannelIds.has(channelId)) selectedChannelIds.delete(channelId);
+            else selectedChannelIds.add(channelId);
             renderSelectedList(); 
-            renderModalList(); // Met à jour l'interface de la modale en direct
+            renderModalList(); 
         }
 
         function removeChannel(channelId) {
@@ -478,22 +398,22 @@
             renderSelectedList();
         }
 
-        // --- 7. METTRE A JOUR L'ÉTAT VISUEL DU BOUTON D'ARMEMENT ---
         function updateUIStatus() {
             if (isSystemActive) {
                 statusText.innerText = "🚨 CIBLAGE ACTIF 🚨";
                 statusText.className = "status-active";
                 fireButton.innerText = "INITIER PROTOCOLE DE DÉSESCALADE";
                 fireButton.className = "active-mode";
+                manualStrikeContainer.classList.remove('hidden'); // Affiche le bouton Tir Manuel
             } else {
                 statusText.innerText = "STANDBY / EN ATTENTE d'ORDRE";
                 statusText.className = "status-inactive";
                 fireButton.innerText = "ARMEZ LE SYSTÈME";
                 fireButton.className = "arm-mode";
+                manualStrikeContainer.classList.add('hidden'); // Cache le bouton Tir Manuel
             }
         }
 
-        // --- 8. FRAPPE STRATÉGIQUE (LE GROS BOUTON) ---
         async function toggleSystem() {
             const newActiveState = !isSystemActive;
             const channelsArray = Array.from(selectedChannelIds);
@@ -507,7 +427,7 @@
             if (!confirm(`CONFIRMER L'ORDRE ${action} DU PROTOCOLE TITI.EXE ?`)) return;
 
             showLoading(newActiveState ? "ARMEMENT DES MISSILS..." : "DÉSACTIVATION EN COURS...");
-            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 500]); // Haptique
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 500]); 
 
             try {
                 const response = await fetch(`${API_BASE_URL}/config`, {
@@ -527,11 +447,41 @@
                 } else {
                     throw new Error(result.error || "Réponse inattendue du serveur");
                 }
-
             } catch (e) {
                 hideLoading();
                 alert(`ÉCHEC CRITIQUE : ${e.message}`);
                 if (e.message.includes('PIN')) window.location.reload();
+            }
+        }
+
+        // --- FRAPPE MANUELLE ---
+        async function forcePing() {
+            if (!confirm("⚠️ AUTORISER LA FRAPPE MANUELLE IMMÉDIATE ?")) return;
+
+            showLoading("CALCUL DE LA TRAJECTOIRE...");
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/force-ping`, {
+                    method: 'POST',
+                    headers: { 'X-PIN': userPin }
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (response.ok) {
+                    // Flash d'écran (Le recul de l'arme)
+                    document.body.style.backgroundColor = "white";
+                    setTimeout(() => document.body.style.backgroundColor = "var(--color-bg)", 100);
+                    
+                    alert("💥 FRAPPE EFFECTUÉE : La cible a été touchée avec succès.");
+                } else {
+                    alert(`ÉCHEC DU TIR : ${result.error}`);
+                }
+            } catch (e) {
+                hideLoading();
+                alert(`ERREUR DE CONNEXION : ${e.message}`);
             }
         }
 
