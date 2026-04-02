@@ -10,7 +10,7 @@ import {
   
 } from 'discord-interactions';
 import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
-import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti, hurtTiti } from './utils.js';
+import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti, hurtTiti, cursedTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore, getAllUsers } from './database.js';
 import { tiana } from './santee_mentale.js';
 import dashboardRouter from './web/dashboard.js';
@@ -138,43 +138,57 @@ app.get('/dashboard/api/radar', async (req, res) => {
 });
 
 
-app.post('/dashboard/api/force-ping', async (req, res) => {
-    // 1. Sécurité par PIN
+// --- DÉBUT MODULE FRAPPE MANUELLE ---
+app.get('/dashboard/api/strike-data', async (req, res) => {
     const userPin = req.headers['x-pin'];
-    if (userPin !== process.env.DASHBOARD_PIN) {
-        return res.status(401).json({ error: 'Accès refusé' });
-    }
-
-    // 2. Vérifier qu'il y a bien des cibles maudites
-    const cursedIds = Array.from(maledictionManager.cursedUsers.keys());
-    if (cursedIds.length === 0) {
-        return res.status(400).json({ error: "Aucune cible n'est actuellement maudite (Utilisez /malediction sur Discord d'abord)." });
-    }
-
-    // 3. Vérifier que le système est allumé avec des salons configurés
-    if (!maledictionManager.isActive || maledictionManager.allowedChannels.length === 0) {
-        return res.status(400).json({ error: "Le système doit être armé avec au moins un secteur verrouillé." });
-    }
+    if (userPin !== process.env.DASHBOARD_PIN) return res.status(401).json({ error: 'Accès refusé' });
 
     try {
-        // Choix aléatoire d'une cible parmi les maudits, et d'un salon autorisé
-        const targetId = cursedIds[Math.floor(Math.random() * cursedIds.length)];
-        const channelId = maledictionManager.allowedChannels[Math.floor(Math.random() * maledictionManager.allowedChannels.length)];
-        
+        const cursedIds = Array.from(maledictionManager.cursedUsers.keys());
+        const users = [];
+        for (const id of cursedIds) {
+            try {
+                const u = await client.users.fetch(id);
+                // avatarURL renvoie la photo de profil (ou null si pas d'avatar)
+                users.push({ id, username: u.username, avatar: u.displayAvatarURL({ size: 64 }) });
+            } catch (e) {}
+        }
+
+        const channels = [];
+        for (const cid of maledictionManager.allowedChannels) {
+            try {
+                const c = await client.channels.fetch(cid);
+                channels.push({ id: cid, name: c.name, guild: c.guild.name });
+            } catch (e) {}
+        }
+        res.json({ users, channels });
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération des données de tir" });
+    }
+});
+
+app.post('/dashboard/api/force-ping', async (req, res) => {
+    const userPin = req.headers['x-pin'];
+    if (userPin !== process.env.DASHBOARD_PIN) return res.status(401).json({ error: 'Accès refusé' });
+
+    const { targetId, channelId } = req.body;
+    if (!targetId || !channelId) return res.status(400).json({ error: "Cible ou secteur de tir manquant." });
+
+    try {
         const channel = await client.channels.fetch(channelId);
         if (channel && channel.isTextBased()) {
-            const message = await randomTiti();
-            // Frappe immédiate avec une alerte spéciale
-            await channel.send(`⚡ **FRAPPE ORBITALE MANUELLE** ⚡\n<@${targetId}> ${message}`);
-            res.json({ success: true, target: targetId });
+            const message = await cursedTiti();
+            // On envoie juste la mention et le texte corrompu (plus d'Alerte système)
+            await channel.send(`<@${targetId}> ${message}`);
+            res.json({ success: true });
         } else {
-            res.status(500).json({ error: "Secteur de tir introuvable ou accès refusé." });
+            res.status(500).json({ error: "Secteur de tir introuvable." });
         }
     } catch (error) {
-        console.error("Erreur force-ping:", error);
         res.status(500).json({ error: "Erreur interne du système de tir." });
     }
 });
+// --- FIN MODULE FRAPPE MANUELLE ---
 
 
 /**
@@ -505,27 +519,21 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
      * MALEDICTION
      */
     if (name === 'malediction') {
-        const devId = '519556904452751392'; // Sécurité : seul toi peux maudire
+        const devId = '519556904452751392';
         const authorId = req.body.member?.user?.id || req.body.user?.id;
 
-        if (authorId !== devId) {
-            return res.send({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: "Tu n'as pas le pouvoir d'invoquer ce mal.", flags: InteractionResponseFlags.EPHEMERAL }
-            });
-        }
+        if (authorId !== devId) return res.send({ type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE, data: { content: "T'as pas les perms :p", flags: InteractionResponseFlags.EPHEMERAL }});
 
         const targetUserId = data.options.find(o => o.name === 'user').value;
-        
-        // Appel du manager
         const isCursed = await maledictionManager.toggleCurseOnUser(targetUserId);
 
         return res.send({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: { 
+                // Texte plus roleplay
                 content: isCursed 
-                    ? `⚠️ **ALERTE SYSTÈME** ⚠️\nLe protocole de frappe a été engagé.\n<@${targetUserId}> s'est fait marabouter... Priez pour lui. 🌩️` 
-                    : `🟢 **DÉSESCALADE** 🟢\n<@${targetUserId}> a été libéré de la malédiction. 🕊️`
+                    ? `*Une sensation étrange envahit <@${targetUserId}>...* 👁️` 
+                    : `*<@${targetUserId}> retrouve ses esprits.* 🕊️`
             }
         });
     }

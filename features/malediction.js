@@ -1,4 +1,4 @@
-import { randomTiti } from '../utils.js';
+import { cursedTiti } from '../utils.js';
 import { getMaledictionState, saveMaledictionState } from '../database.js';
 
 class MaledictionManager {
@@ -79,7 +79,7 @@ class MaledictionManager {
                 const channel = await this.client.channels.fetch(channelId);
 
                 if (channel && channel.isTextBased()) {
-                    const message = await randomTiti();
+                    const message = await cursedTiti(); 
                     await channel.send(`<@${userId}> ${message}`);
                 }
             } catch (error) {

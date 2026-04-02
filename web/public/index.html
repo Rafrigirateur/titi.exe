@@ -8,181 +8,73 @@
         /* --- STYLE BRUTALISTE & MILITAIRE --- */
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-        :root {
-            --color-danger: #ff0000;
-            --color-safe: #00ff00;
-            --color-bg: #000000;
-            --color-text: #ff3333;
-            --glow: 0 0 10px rgba(255, 0, 0, 0.7);
-        }
+        :root { --color-danger: #ff0000; --color-safe: #00ff00; --color-bg: #000000; --color-text: #ff3333; --glow: 0 0 10px rgba(255, 0, 0, 0.7); }
 
         body {
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            font-family: 'Share Tech Mono', monospace;
-            text-transform: uppercase;
-            overflow: hidden; 
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            position: relative;
-            transition: background-color 0.1s; /* Pour l'effet de flash */
+            background-color: var(--color-bg); color: var(--color-text); font-family: 'Share Tech Mono', monospace; text-transform: uppercase;
+            overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; position: relative; transition: background-color 0.1s;
         }
 
-        /* --- EFFET SCANLINE --- */
         body::before {
-            content: " ";
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            z-index: 100;
-            pointer-events: none;
-            opacity: 0.3;
+            content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%); background-size: 100% 4px; z-index: 100; pointer-events: none; opacity: 0.3;
         }
 
-        /* --- CONTENEUR PRINCIPAL --- */
         #console-container {
-            border: 2px solid var(--color-text);
-            padding: 20px;
-            width: 95%;
-            max-width: 650px;
-            box-shadow: var(--glow);
-            position: relative;
-            background: rgba(10, 0, 0, 0.85);
-            max-height: 95vh;
-            display: flex;
-            flex-direction: column;
+            border: 2px solid var(--color-text); padding: 20px; width: 95%; max-width: 650px; box-shadow: var(--glow); position: relative; background: rgba(10, 0, 0, 0.85); max-height: 95vh; display: flex; flex-direction: column;
         }
 
-        #header {
-            text-align: center;
-            border-bottom: 2px solid var(--color-text);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            flex-shrink: 0;
-        }
-
-        #status-display {
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-            padding: 5px;
-            border: 1px dashed var(--color-text);
-            flex-shrink: 0;
-        }
-
+        #header { text-align: center; border-bottom: 2px solid var(--color-text); padding-bottom: 10px; margin-bottom: 15px; flex-shrink: 0; }
+        #status-display { font-size: 1.5em; font-weight: bold; text-align: center; margin: 10px 0; padding: 5px; border: 1px dashed var(--color-text); flex-shrink: 0; }
         .status-active { color: var(--color-danger); text-shadow: var(--glow); animation: blink 0.5s infinite; }
         .status-inactive { color: #555; }
 
-        /* --- LISTE DES SALONS SÉLECTIONNÉS --- */
-        #selected-channels-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            border: 1px solid var(--color-text);
-            background: #0a0000;
-            padding: 5px;
-            margin-bottom: 10px;
-            min-height: 150px;
-            max-height: 35vh;
-        }
-
-        .channel-item {
-            border: 1px dashed #550000;
-            padding: 10px;
-            margin-bottom: 5px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .channel-item.active-target {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid var(--color-danger);
-        }
-
+        /* --- LISTE DES SALONS --- */
+        #selected-channels-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-bottom: 10px; min-height: 150px; max-height: 30vh; }
+        .channel-item { border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; display: flex; flex-direction: column; position: relative; }
+        .channel-item.active-target { background: rgba(255, 0, 0, 0.1); border: 1px solid var(--color-danger); }
         .channel-name { font-weight: bold; font-size: 1.1em; padding-right: 30px; }
-        
         .channel-users { font-size: 0.85em; color: #aaa; margin-top: 4px; text-transform: none; }
-
-        /* --- BOUTON SUPPRIMER --- */
-        .remove-btn {
-            position: absolute; top: 10px; right: 10px;
-            background: transparent; border: 1px solid var(--color-danger);
-            color: var(--color-danger); font-family: 'Share Tech Mono', monospace;
-            cursor: pointer; padding: 2px 6px; font-size: 1em; font-weight: bold; transition: all 0.2s;
-        }
+        
+        .remove-btn { position: absolute; top: 10px; right: 10px; background: transparent; border: 1px solid var(--color-danger); color: var(--color-danger); font-family: 'Share Tech Mono', monospace; cursor: pointer; padding: 2px 6px; font-size: 1em; font-weight: bold; }
         .remove-btn:hover { background: var(--color-danger); color: var(--color-bg); }
 
-        /* --- CONTRÔLES --- */
-        .radar-controls {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 5px; flex-shrink: 0;
-        }
-
-        .radar-btn {
-            background: transparent; border: 1px solid var(--color-text);
-            color: var(--color-text); padding: 5px 10px;
-            cursor: pointer; font-family: 'Share Tech Mono', monospace; transition: all 0.2s;
-        }
+        .radar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-shrink: 0; }
+        .radar-btn { background: transparent; border: 1px solid var(--color-text); color: var(--color-text); padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono', monospace; transition: all 0.2s; }
         .radar-btn:hover { background: var(--color-danger); color: var(--color-bg); }
-
         .add-target-btn { width: 100%; border-style: dashed; margin-bottom: 15px; padding: 10px; font-size: 1.1em; flex-shrink: 0; }
 
-        /* --- LE GROS BOUTON --- */
         #fire-button-container { text-align: center; flex-shrink: 0; }
-
-        #fire-button {
-            background-color: #330000; border: 4px solid var(--color-danger);
-            color: var(--color-danger); font-family: 'Share Tech Mono', monospace;
-            font-size: 1.8em; font-weight: bold; padding: 15px 30px; cursor: pointer;
-            text-transform: uppercase; box-shadow: var(--glow); transition: all 0.2s; width: 100%;
-        }
-
+        #fire-button { background-color: #330000; border: 4px solid var(--color-danger); color: var(--color-danger); font-family: 'Share Tech Mono', monospace; font-size: 1.8em; font-weight: bold; padding: 15px 30px; cursor: pointer; text-transform: uppercase; box-shadow: var(--glow); transition: all 0.2s; width: 100%; }
         #fire-button:hover { background-color: var(--color-danger); color: var(--color-bg); box-shadow: 0 0 20px var(--color-danger); }
         #fire-button:active { transform: scale(0.98); }
         #fire-button.active-mode { background-color: var(--color-bg); border-color: #444; color: #444; box-shadow: none; }
         #fire-button.active-mode:hover { background-color: #222; }
 
-        /* --- MODAL --- */
-        #modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center;
-            z-index: 500; backdrop-filter: blur(3px);
-        }
-
-        #modal-content {
-            border: 2px solid var(--color-danger); background: #050000;
-            width: 90%; max-width: 600px; max-height: 80vh; display: flex;
-            flex-direction: column; padding: 15px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-        }
-
-        #modal-radar-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-top: 10px; }
-
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 500; backdrop-filter: blur(3px); }
+        .modal-content { border: 2px solid var(--color-danger); background: #050000; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+        .modal-list-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-top: 10px; max-height: 40vh;}
+        
         .modal-item { border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: pointer; display: flex; flex-direction: column; }
         .modal-item:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
         .modal-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); box-shadow: var(--glow); }
-        .modal-item.selected .channel-users { color: #330000; font-weight: bold; }
 
-        /* --- FORMULAIRES --- */
-        input[type="text"], input[type="password"] {
-            width: 100%; background-color: #1a0000; border: 1px solid var(--color-text);
-            color: var(--color-danger); font-family: 'Share Tech Mono', monospace; padding: 10px; box-sizing: border-box; font-size: 1em;
-        }
+        /* --- STRIKE TARGETING UI --- */
+        .target-user-item { display: flex; align-items: center; border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: pointer; }
+        .target-user-item:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
+        .target-user-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); }
+        .target-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-text); margin-right: 15px; }
+        .target-name { font-weight: bold; text-transform: none;}
+
+        input[type="text"], input[type="password"] { width: 100%; background-color: #1a0000; border: 1px solid var(--color-text); color: var(--color-danger); font-family: 'Share Tech Mono', monospace; padding: 10px; box-sizing: border-box; font-size: 1em; }
         input[type="password"] { font-size: 1.2em; text-align: center; letter-spacing: 5px; }
         input:focus { outline: none; box-shadow: var(--glow); }
 
         @keyframes blink { 50% { opacity: 0; } }
         .hidden { display: none !important; }
 
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; font-size: 2em; color: var(--color-danger); text-align: center;
-        }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; font-size: 2em; color: var(--color-danger); text-align: center; }
         .loader-text { margin-top: 20px; font-size: 0.6em; color: #aaa; animation: blink 1s infinite;}
     </style>
 </head>
@@ -193,14 +85,33 @@
         <div class="loader-text" id="loading-sub-text">Attente de réponse du système Jupiter</div>
     </div>
 
-    <div id="modal-overlay" class="hidden">
-        <div id="modal-content">
+    <div id="radar-modal" class="modal-overlay hidden">
+        <div class="modal-content">
             <div class="radar-controls">
                 <label>BASE DE DONNÉES RADAR</label>
-                <button class="radar-btn" onclick="closeModal()">FERMER [X]</button>
+                <button class="radar-btn" onclick="closeRadarModal()">FERMER [X]</button>
             </div>
-            <input type="text" id="modal-search-input" placeholder="FILTRER : SERVEUR, SALON OU CIBLE..." oninput="renderModalList()">
-            <div id="modal-radar-container"></div>
+            <input type="text" id="modal-search-input" placeholder="FILTRER : SERVEUR, SALON OU CIBLE..." oninput="renderRadarModalList()">
+            <div id="modal-radar-container" class="modal-list-container"></div>
+        </div>
+    </div>
+
+    <div id="strike-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="radar-controls">
+                <label style="color:#ffaa00;">⚠️ SÉLECTION DE LA CIBLE</label>
+                <button class="radar-btn" onclick="closeStrikeModal()">ANNULER</button>
+            </div>
+            
+            <div style="margin-top:10px; font-size:0.9em; color:#aaa;">1. CIBLE À MARABOUTER</div>
+            <div id="strike-users-container" class="modal-list-container" style="max-height: 20vh;"></div>
+
+            <div style="margin-top:10px; font-size:0.9em; color:#aaa;">2. SECTEUR DE FRAPPE</div>
+            <div id="strike-channels-container" class="modal-list-container" style="max-height: 20vh;"></div>
+
+            <button id="confirm-strike-btn" class="radar-btn" style="margin-top:15px; width:100%; font-size:1.5em; padding:10px; color:#ffaa00; border-color:#ffaa00;" onclick="executeStrike()">
+                ENGAGER LA FRAPPE 💥
+            </button>
         </div>
     </div>
 
@@ -230,14 +141,12 @@
                 <button class="radar-btn" onclick="fetchRadarData()">📡 ACTUALISER</button>
             </div>
 
-            <div id="selected-channels-container">
-                <div style="text-align: center; padding: 20px; color: #555;">EN ATTENTE DES DONNÉES SATELLITES...</div>
-            </div>
+            <div id="selected-channels-container"></div>
 
-            <button class="radar-btn add-target-btn" onclick="openModal()">[+] ASSIGNER UNE NOUVELLE CIBLE</button>
+            <button class="radar-btn add-target-btn" onclick="openRadarModal()">[+] ASSIGNER UNE NOUVELLE ZÔNE</button>
 
             <div id="manual-strike-container" class="hidden" style="margin-bottom: 15px;">
-                <button class="radar-btn" style="width: 100%; border-color: #ffaa00; color: #ffaa00; font-size: 1.2em; padding: 10px; font-weight: bold; background: rgba(255, 170, 0, 0.1);" onclick="forcePing()">
+                <button class="radar-btn" style="width: 100%; border-color: #ffaa00; color: #ffaa00; font-size: 1.2em; padding: 10px; font-weight: bold; background: rgba(255, 170, 0, 0.1);" onclick="openStrikeModal()">
                     ⚠️ ORDONNER UN TIR MANUEL
                 </button>
             </div>
@@ -257,6 +166,11 @@
         let selectedChannelIds = new Set(); 
         let radarChannels = []; 
 
+        // Variables pour la frappe manuelle
+        let strikeData = { users: [], channels: [] };
+        let selectedStrikeUser = null;
+        let selectedStrikeChannel = null;
+
         const authSection = document.getElementById('auth-section');
         const controlPanel = document.getElementById('control-panel');
         const pinInput = document.getElementById('pin-input');
@@ -266,10 +180,14 @@
         const loadingMainText = document.getElementById('loading-main-text');
         
         const selectedContainer = document.getElementById('selected-channels-container');
-        const modalOverlay = document.getElementById('modal-overlay');
-        const modalContainer = document.getElementById('modal-radar-container');
+        const radarModal = document.getElementById('radar-modal');
+        const modalRadarContainer = document.getElementById('modal-radar-container');
         const modalSearchInput = document.getElementById('modal-search-input');
         const manualStrikeContainer = document.getElementById('manual-strike-container');
+        
+        const strikeModal = document.getElementById('strike-modal');
+        const strikeUsersContainer = document.getElementById('strike-users-container');
+        const strikeChannelsContainer = document.getElementById('strike-channels-container');
 
         function authenticate() {
             userPin = pinInput.value.trim();
@@ -302,17 +220,13 @@
             showLoading("BALAYAGE SATELLITE EN COURS...");
             try {
                 const response = await fetch(`${API_BASE_URL}/radar`, { headers: { 'X-PIN': userPin } });
-                if (!response.ok) {
-                    if(response.status === 401) throw new Error("PIN INVALIDE");
-                    throw new Error("ERREUR RADAR");
-                }
+                if (!response.ok) throw new Error("ERREUR RADAR");
                 radarChannels = await response.json();
                 renderSelectedList();
                 hideLoading();
             } catch (e) {
                 hideLoading();
                 alert(`ÉCHEC DU BALAYAGE : ${e.message}`);
-                if (e.message.includes('PIN')) window.location.reload();
             }
         }
 
@@ -336,7 +250,7 @@
                 } else {
                     itemDiv.innerHTML = `
                         <div class="channel-name" style="color:gray;">[ZÔNE RADAR INCONNUE]</div>
-                        <div class="channel-users">ID: ${id} (Accès potentiellement perdu)</div>
+                        <div class="channel-users">ID: ${id}</div>
                         <button class="remove-btn" onclick="removeChannel('${id}')">X</button>
                     `;
                 }
@@ -344,73 +258,154 @@
             });
         }
 
-        function openModal() {
-            modalOverlay.classList.remove('hidden');
+        /* --- MODAL RADAR --- */
+        function openRadarModal() {
+            radarModal.classList.remove('hidden');
             modalSearchInput.value = '';
-            renderModalList();
+            renderRadarModalList();
         }
 
-        function closeModal() { modalOverlay.classList.add('hidden'); }
+        function closeRadarModal() { radarModal.classList.add('hidden'); }
 
-        function renderModalList() {
-            modalContainer.innerHTML = '';
+        function renderRadarModalList() {
+            modalRadarContainer.innerHTML = '';
             const searchTerm = modalSearchInput.value.toLowerCase().trim();
 
-            if (radarChannels.length === 0) {
-                modalContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--color-danger);">AUCUNE CIBLE DÉTECTÉE PAR LE RADAR.</div>';
-                return;
-            }
-
-            const filteredChannels = radarChannels.filter(channelData => {
-                const searchableText = `${channelData.guild} ${channelData.channel} ${channelData.users.join(' ')}`.toLowerCase();
-                return searchableText.includes(searchTerm);
-            });
+            const filteredChannels = radarChannels.filter(c => 
+                `${c.guild} ${c.channel} ${c.users.join(' ')}`.toLowerCase().includes(searchTerm)
+            );
 
             if (filteredChannels.length === 0) {
-                modalContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUN SECTEUR NE CORRESPOND AUX CRITÈRES.</div>';
+                modalRadarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUNE ZÔNE TROUVÉE.</div>';
                 return;
             }
 
-            filteredChannels.forEach(channelData => {
-                const isSelected = selectedChannelIds.has(channelData.id);
+            filteredChannels.forEach(c => {
+                const isSelected = selectedChannelIds.has(c.id);
                 const itemDiv = document.createElement('div');
                 itemDiv.className = `modal-item ${isSelected ? 'selected' : ''}`;
-                itemDiv.onclick = () => toggleChannelSelection(channelData.id);
+                itemDiv.onclick = () => {
+                    if (selectedChannelIds.has(c.id)) selectedChannelIds.delete(c.id);
+                    else selectedChannelIds.add(c.id);
+                    renderSelectedList(); 
+                    renderRadarModalList(); 
+                    silentSync();
+                };
 
                 itemDiv.innerHTML = `
-                    <div class="channel-name">[${channelData.guild}] #${channelData.channel}</div>
-                    <div class="channel-users">Cibles exposées : ${channelData.users.join(', ')}</div>
+                    <div class="channel-name">[${c.guild}] #${c.channel}</div>
+                    <div class="channel-users">Cibles exposées : ${c.users.join(', ')}</div>
                     ${isSelected ? '<div style="font-size:0.7em; margin-top:5px;">[VERROUILLÉ]</div>' : ''}
                 `;
-                modalContainer.appendChild(itemDiv);
+                modalRadarContainer.appendChild(itemDiv);
             });
-        }
-
-        function toggleChannelSelection(channelId) {
-            if (selectedChannelIds.has(channelId)) selectedChannelIds.delete(channelId);
-            else selectedChannelIds.add(channelId);
-            renderSelectedList(); 
-            renderModalList(); 
         }
 
         function removeChannel(channelId) {
             selectedChannelIds.delete(channelId);
             renderSelectedList();
+            silentSync();
         }
 
+        /* --- MODAL FRAPPE MANUELLE --- */
+        async function openStrikeModal() {
+            showLoading("RÉCUPÉRATION DES CIBLES...");
+            try {
+                const res = await fetch(`${API_BASE_URL}/strike-data`, { headers: { 'X-PIN': userPin } });
+                if (!res.ok) throw new Error("Erreur de connexion tactique.");
+                strikeData = await res.json();
+                
+                selectedStrikeUser = null;
+                selectedStrikeChannel = null;
+                
+                renderStrikeModal();
+                strikeModal.classList.remove('hidden');
+                hideLoading();
+            } catch (e) {
+                hideLoading();
+                alert(e.message);
+            }
+        }
+
+        function closeStrikeModal() { strikeModal.classList.add('hidden'); }
+
+        function renderStrikeModal() {
+            strikeUsersContainer.innerHTML = '';
+            strikeChannelsContainer.innerHTML = '';
+
+            if (strikeData.users.length === 0) {
+                strikeUsersContainer.innerHTML = '<div style="padding:10px; color:gray;">Aucune cible n\'est maudite actuellement. Utilisez /malediction sur Discord.</div>';
+            } else {
+                strikeData.users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = `target-user-item ${selectedStrikeUser === u.id ? 'selected' : ''}`;
+                    div.onclick = () => { selectedStrikeUser = u.id; renderStrikeModal(); };
+                    
+                    const avatarUrl = u.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    div.innerHTML = `<img src="${avatarUrl}" class="target-avatar"><div class="target-name">${u.username}</div>`;
+                    strikeUsersContainer.appendChild(div);
+                });
+            }
+
+            if (strikeData.channels.length === 0) {
+                strikeChannelsContainer.innerHTML = '<div style="padding:10px; color:gray;">Aucun secteur autorisé.</div>';
+            } else {
+                strikeData.channels.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = `modal-item ${selectedStrikeChannel === c.id ? 'selected' : ''}`;
+                    div.onclick = () => { selectedStrikeChannel = c.id; renderStrikeModal(); };
+                    div.innerHTML = `<div class="channel-name">[${c.guild}] #${c.name}</div>`;
+                    strikeChannelsContainer.appendChild(div);
+                });
+            }
+        }
+
+        async function executeStrike() {
+            if (!selectedStrikeUser || !selectedStrikeChannel) {
+                alert("VEUILLEZ SÉLECTIONNER UNE CIBLE ET UN SECTEUR.");
+                return;
+            }
+
+            closeStrikeModal();
+            showLoading("CALCUL DE LA TRAJECTOIRE...");
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/force-ping`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
+                    body: JSON.stringify({ targetId: selectedStrikeUser, channelId: selectedStrikeChannel })
+                });
+
+                hideLoading();
+
+                if (response.ok) {
+                    document.body.style.backgroundColor = "white";
+                    setTimeout(() => document.body.style.backgroundColor = "var(--color-bg)", 100);
+                } else {
+                    const result = await response.json();
+                    alert(`ÉCHEC DU TIR : ${result.error}`);
+                }
+            } catch (e) {
+                hideLoading();
+                alert(`ERREUR DE CONNEXION : ${e.message}`);
+            }
+        }
+
+        /* --- SYSTÈME GLOBAL --- */
         function updateUIStatus() {
             if (isSystemActive) {
                 statusText.innerText = "🚨 CIBLAGE ACTIF 🚨";
                 statusText.className = "status-active";
                 fireButton.innerText = "INITIER PROTOCOLE DE DÉSESCALADE";
                 fireButton.className = "active-mode";
-                manualStrikeContainer.classList.remove('hidden'); // Affiche le bouton Tir Manuel
+                manualStrikeContainer.classList.remove('hidden');
             } else {
                 statusText.innerText = "STANDBY / EN ATTENTE d'ORDRE";
                 statusText.className = "status-inactive";
                 fireButton.innerText = "ARMEZ LE SYSTÈME";
                 fireButton.className = "arm-mode";
-                manualStrikeContainer.classList.add('hidden'); // Cache le bouton Tir Manuel
+                manualStrikeContainer.classList.add('hidden');
             }
         }
 
@@ -423,8 +418,7 @@
                 return;
             }
 
-            const action = newActiveState ? "D'ACTIVATION" : "DE DÉSACTIVATION";
-            if (!confirm(`CONFIRMER L'ORDRE ${action} DU PROTOCOLE TITI.EXE ?`)) return;
+            if (!confirm(`CONFIRMER L'ORDRE ${newActiveState ? "D'ACTIVATION" : "DE DÉSACTIVATION"} ?`)) return;
 
             showLoading(newActiveState ? "ARMEMENT DES MISSILS..." : "DÉSACTIVATION EN COURS...");
             if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 500]); 
@@ -436,96 +430,31 @@
                     body: JSON.stringify({ isActive: newActiveState, channels: channelsArray })
                 });
 
-                const result = await response.json();
-                
-                if (result.success) {
+                if (response.ok) {
                     isSystemActive = newActiveState;
-                    setTimeout(() => { 
-                        hideLoading();
-                        updateUIStatus();
-                    }, 1500);
-                } else {
-                    throw new Error(result.error || "Réponse inattendue du serveur");
+                    setTimeout(() => { hideLoading(); updateUIStatus(); }, 1500);
                 }
             } catch (e) {
                 hideLoading();
                 alert(`ÉCHEC CRITIQUE : ${e.message}`);
-                if (e.message.includes('PIN')) window.location.reload();
             }
         }
 
-        // --- FRAPPE MANUELLE ---
-        async function forcePing() {
-            if (!confirm("⚠️ AUTORISER LA FRAPPE MANUELLE IMMÉDIATE ?")) return;
-
-            showLoading("CALCUL DE LA TRAJECTOIRE...");
-            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/force-ping`, {
-                    method: 'POST',
-                    headers: { 'X-PIN': userPin }
-                });
-
-                const result = await response.json();
-                hideLoading();
-
-                if (response.ok) {
-                    // Flash d'écran (Le recul de l'arme)
-                    document.body.style.backgroundColor = "white";
-                    setTimeout(() => document.body.style.backgroundColor = "var(--color-bg)", 100);
-                    
-                    alert("💥 FRAPPE EFFECTUÉE : La cible a été touchée avec succès.");
-                } else {
-                    alert(`ÉCHEC DU TIR : ${result.error}`);
-                }
-            } catch (e) {
-                hideLoading();
-                alert(`ERREUR DE CONNEXION : ${e.message}`);
-            }
-        }
-
-        // --- UTILITAIRES ---
-        function showLoading(text) {
-            loadingMainText.innerText = text;
-            loadingOverlay.classList.remove('hidden');
-        }
-
-        function hideLoading() { loadingOverlay.classList.add('hidden'); }
-
-        pinInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") authenticate();
-        });
-
-        // --- SYNCHRONISATION SILENCIEUSE (AJOUT) ---
         async function silentSync() {
-            if (!userPin) return; // Ne fait rien si pas connecté
-            const channelsArray = Array.from(selectedChannelIds);
+            if (!userPin) return; 
             try {
                 await fetch(`${API_BASE_URL}/config`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
-                    body: JSON.stringify({ isActive: isSystemActive, channels: channelsArray })
+                    body: JSON.stringify({ isActive: isSystemActive, channels: Array.from(selectedChannelIds) })
                 });
-            } catch (e) {
-                console.error("Erreur de synchronisation radar");
-            }
+            } catch (e) {}
         }
 
-        // --- MODIFICATION DES FONCTIONS EXISTANTES ---
-        function toggleChannelSelection(channelId) {
-            if (selectedChannelIds.has(channelId)) selectedChannelIds.delete(channelId);
-            else selectedChannelIds.add(channelId);
-            renderSelectedList(); 
-            renderModalList(); 
-            silentSync(); // 👈 Met à jour le serveur instantanément
-        }
+        function showLoading(text) { loadingMainText.innerText = text; loadingOverlay.classList.remove('hidden'); }
+        function hideLoading() { loadingOverlay.classList.add('hidden'); }
 
-        function removeChannel(channelId) {
-            selectedChannelIds.delete(channelId);
-            renderSelectedList();
-            silentSync(); // 👈 Met à jour le serveur instantanément
-        }
+        pinInput.addEventListener("keypress", function(event) { if (event.key === "Enter") authenticate(); });
     </script>
 </body>
 </html>
