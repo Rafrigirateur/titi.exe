@@ -82,6 +82,60 @@ function normalizeType(type) {
   return mapping[type] || type;
 }
 
+app.get('/dashboard/api/radar', async (req, res) => {
+    // Sécurité par PIN
+    const userPin = req.headers['x-pin'];
+    if (userPin !== process.env.DASHBOARD_PIN) {
+        return res.status(401).json({ error: 'Accès refusé' });
+    }
+
+    try {
+        const dbUsers = await getAllUsers();
+        const dbUserIds = dbUsers.map(u => u.user_id);
+        const radarData = [];
+
+        if (dbUserIds.length === 0) return res.json([]);
+
+        // Parcours de tous les serveurs où le bot est présent
+        for (const guild of client.guilds.cache.values()) {
+            // Tente de récupérer les membres du serveur présents dans notre BDD
+            let members;
+            try {
+                members = await guild.members.fetch({ user: dbUserIds });
+            } catch (e) {
+                continue; // Ignore si erreur de droits
+            }
+
+            // Parcours des salons du serveur
+            for (const channel of guild.channels.cache.values()) {
+                if (!channel.isTextBased()) continue;
+
+                const visibleTo = [];
+                for (const member of members.values()) {
+                    // Vérifie si l'utilisateur a la permission de voir CE salon
+                    if (channel.permissionsFor(member).has('ViewChannel')) {
+                        visibleTo.push(member.user.username);
+                    }
+                }
+
+                // Si au moins une de nos cibles peut voir le salon, on l'ajoute au radar
+                if (visibleTo.length > 0) {
+                    radarData.push({
+                        guild: guild.name,
+                        channel: channel.name,
+                        id: channel.id,
+                        users: visibleTo
+                    });
+                }
+            }
+        }
+        res.json(radarData);
+    } catch (error) {
+        console.error("Erreur radar:", error);
+        res.status(500).json({ error: "Erreur interne du radar" });
+    }
+});
+
 /**
  * Interactions endpoint URL where Discord will send HTTP requests
  * Parse request body and verifies incoming requests using discord-interactions package
@@ -429,9 +483,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: { 
                 content: isCursed 
-                    ? `<@${targetUserId}> s'est fait marabouter 🌩️` 
-                    : `<@${targetUserId}> a été libéré de la malédiction. 🕊️`,
-                flags: InteractionResponseFlags.EPHEMERAL 
+                    ? `⚠️ **ALERTE SYSTÈME** ⚠️\nLe protocole de frappe a été engagé.\n<@${targetUserId}> s'est fait marabouter... Priez pour lui. 🌩️` 
+                    : `🟢 **DÉSESCALADE** 🟢\n<@${targetUserId}> a été libéré de la malédiction. 🕊️`
             }
         });
     }

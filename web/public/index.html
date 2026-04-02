@@ -21,7 +21,7 @@
             color: var(--color-text);
             font-family: 'Share Tech Mono', monospace;
             text-transform: uppercase;
-            overflow: hidden; /* Empêche le scroll pour l'immersion */
+            overflow: hidden; 
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -46,18 +46,22 @@
         #console-container {
             border: 2px solid var(--color-text);
             padding: 20px;
-            width: 90%;
-            max-width: 600px;
+            width: 95%;
+            max-width: 650px;
             box-shadow: var(--glow);
             position: relative;
-            background: rgba(10, 0, 0, 0.8);
+            background: rgba(10, 0, 0, 0.85);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
         }
 
         #header {
             text-align: center;
             border-bottom: 2px solid var(--color-text);
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
         }
 
         #status-display {
@@ -67,67 +71,110 @@
             margin: 10px 0;
             padding: 5px;
             border: 1px dashed var(--color-text);
+            flex-shrink: 0;
         }
 
-        .status-active {
-            color: var(--color-danger);
-            text-shadow: var(--glow);
-            animation: blink 0.5s infinite;
+        .status-active { color: var(--color-danger); text-shadow: var(--glow); animation: blink 0.5s infinite; }
+        .status-inactive { color: #555; }
+
+        /* --- LISTE DES SALONS (RADAR) --- */
+        .input-group {
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
-        .status-inactive {
-            color: #555; /* Gris sombre pour l'inactif */
+        #radar-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid var(--color-text);
+            background: #0a0000;
+            padding: 5px;
+            margin-bottom: 15px;
+            min-height: 150px;
         }
+
+        .channel-item {
+            border: 1px dashed #550000;
+            padding: 10px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .channel-item:hover {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: var(--color-danger);
+        }
+
+        .channel-item.selected {
+            background: var(--color-danger);
+            color: var(--color-bg);
+            border: 1px solid var(--color-danger);
+            box-shadow: var(--glow);
+        }
+
+        .channel-name { font-weight: bold; font-size: 1.1em; }
+        
+        .channel-users {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-top: 4px;
+            text-transform: none; /* Rendre les pseudos plus lisibles */
+        }
+        
+        .channel-item.selected .channel-users { color: #330000; font-weight: bold; }
+
+        .radar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .radar-btn {
+            background: transparent;
+            border: 1px solid var(--color-text);
+            color: var(--color-text);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .radar-btn:hover { background: var(--color-danger); color: var(--color-bg); }
 
         /* --- FORMULAIRES --- */
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="password"], textarea {
+        input[type="password"] {
             width: 100%;
             background-color: #1a0000;
             border: 1px solid var(--color-text);
             color: var(--color-danger);
             font-family: 'Share Tech Mono', monospace;
-            padding: 8px;
+            padding: 10px;
             box-sizing: border-box;
+            font-size: 1.2em;
+            text-align: center;
+            letter-spacing: 5px;
         }
 
-        textarea {
-            resize: none;
-            height: 80px;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            box-shadow: var(--glow);
-        }
+        input:focus { outline: none; box-shadow: var(--glow); }
 
         /* --- LE GROS BOUTON --- */
-        #fire-button-container {
-            text-align: center;
-            margin-top: 30px;
-        }
+        #fire-button-container { text-align: center; flex-shrink: 0; }
 
         #fire-button {
             background-color: #330000;
             border: 4px solid var(--color-danger);
             color: var(--color-danger);
             font-family: 'Share Tech Mono', monospace;
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: bold;
-            padding: 20px 40px;
+            padding: 15px 30px;
             cursor: pointer;
             text-transform: uppercase;
             box-shadow: var(--glow);
             transition: all 0.2s;
+            width: 100%;
         }
 
         #fire-button:hover {
@@ -136,9 +183,7 @@
             box-shadow: 0 0 20px var(--color-danger);
         }
 
-        #fire-button:active {
-            transform: scale(0.95);
-        }
+        #fire-button:active { transform: scale(0.98); }
 
         #fire-button.active-mode {
             background-color: var(--color-bg);
@@ -146,33 +191,30 @@
             color: #444;
             box-shadow: none;
         }
-         #fire-button.active-mode:hover {
-            background-color: #222;
-        }
+        #fire-button.active-mode:hover { background-color: #222; }
 
-        /* --- ANIMATIONS --- */
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        /* --- ANIMATIONS & UTILITAIRES --- */
+        @keyframes blink { 50% { opacity: 0; } }
+        .hidden { display: none !important; }
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
-            display: flex; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 1000;
             font-size: 2em;
             color: var(--color-danger);
+            text-align: center;
         }
+        
+        .loader-text { margin-top: 20px; font-size: 0.6em; color: #aaa; animation: blink 1s infinite;}
     </style>
 </head>
 <body>
 
     <div id="loading-overlay" class="hidden">
-        Traitement de l'ordre...<br>Attente confirmation...
+        <div id="loading-main-text">TRAITEMENT EN COURS...</div>
+        <div class="loader-text" id="loading-sub-text">Attente de réponse du système Jupiter</div>
     </div>
 
     <div id="console-container">
@@ -185,24 +227,24 @@
 
         <div id="auth-section">
             <div class="input-group">
-                <label>Veuillez entrer le Code d'Autorisation (PIN) :</label>
+                <label style="text-align:center;">CODE D'AUTORISATION REQUIS :</label>
                 <input type="password" id="pin-input" placeholder="XXXXXX" maxlength="20">
             </div>
-            <button id="fire-button" style="font-size:1.2em; padding: 10px;" onclick="authenticate()">Valider l'Identité</button>
+            <button id="fire-button" style="font-size:1.2em; padding: 10px;" onclick="authenticate()">DÉVERROUILLER</button>
         </div>
 
-        <div id="control-panel" class="hidden">
+        <div id="control-panel" class="hidden" style="display: flex; flex-direction: column; flex-grow: 1;">
             <div id="status-display">
                 État du Système : <span id="status-text" class="status-inactive">STANDBY</span>
             </div>
 
-            <div class="input-group">
-                <label>Secteurs de Ciblage (IDs Salons Discord, séparés par virgule) :</label>
-                <textarea id="channels-input" placeholder="12345..., 67890..."></textarea>
+            <div class="radar-controls">
+                <label>Secteurs de Ciblage Tactique :</label>
+                <button class="radar-btn" onclick="fetchRadarData()">📡 ACTUALISER LE RADAR</button>
             </div>
 
-            <div style="border: 1px solid white; padding: 10px; background-color:#111; color:white; margin-bottom:15px;">
-                ATTENTION : L'activation du module "Malédiction" déclenche un protocole de harcèlement psychologique récursif et aléatoire. Assurez-vous d'avoir l'autorisation de frappe stratégique.
+            <div id="radar-container">
+                <div style="text-align: center; padding: 20px; color: #555;">EN ATTENTE DES DONNÉES SATELLITES...</div>
             </div>
 
             <div id="fire-button-container">
@@ -214,48 +256,123 @@
     </div>
 
     <script>
-        // API Configuration
+        // --- ÉTAT GLOBAL ---
         const API_BASE_URL = '/dashboard/api';
-        let currentStatus = { isActive: false, allowedChannels: [] };
         let userPin = '';
+        let isSystemActive = false;
+        let selectedChannelIds = new Set(); // Stocke les IDs des salons sélectionnés
+        let radarChannels = []; // Stocke les données brutes du radar
 
-        // Elements
+        // --- ÉLÉMENTS DU DOM ---
         const authSection = document.getElementById('auth-section');
         const controlPanel = document.getElementById('control-panel');
         const pinInput = document.getElementById('pin-input');
-        const channelsInput = document.getElementById('channels-input');
         const statusText = document.getElementById('status-text');
         const fireButton = document.getElementById('fire-button');
+        const radarContainer = document.getElementById('radar-container');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMainText = document.getElementById('loading-main-text');
 
-        // 1. Authentification locale (juste pour afficher le panneau)
+        // --- 1. AUTHENTIFICATION ---
         function authenticate() {
-            userPin = pinInput.value;
-            if (!userPin) {
-                alert("CODE REQUIS.");
-                return;
-            }
-            // On cache l'auth, on montre le panel et on charge les données
+            userPin = pinInput.value.trim();
+            if (!userPin) { alert("ERREUR : CODE REQUIS."); return; }
+            
+            showLoading("DÉVERROUILLAGE SÉCURISÉ...");
+            
+            // On masque l'authentification et on charge les données
             authSection.classList.add('hidden');
             controlPanel.classList.remove('hidden');
-            fetchStatus();
+            
+            initDashboard();
         }
 
-        // 2. Charger l'état actuel depuis l'API
-        async function fetchStatus() {
+        // --- 2. INITIALISATION DU DASHBOARD ---
+        async function initDashboard() {
             try {
-                const response = await fetch(`${API_BASE_URL}/status`);
-                currentStatus = await response.json();
-                updateUI();
+                // Récupère d'abord l'état actuel de la malédiction
+                const statusRes = await fetch(`${API_BASE_URL}/status`);
+                if (!statusRes.ok) throw new Error("Erreur de liaison");
+                const statusData = await statusRes.json();
+                
+                isSystemActive = statusData.isActive;
+                selectedChannelIds = new Set(statusData.allowedChannels);
+                
+                updateUIStatus();
+
+                // Ensuite, on lance le scan radar pour peupler l'interface
+                await fetchRadarData();
             } catch (e) {
-                console.error("Erreur de liaison Jupiter:", e);
-                statusText.innerText = "ERREUR DE LIAISON";
+                hideLoading();
+                alert("CONNEXION AU PC JUPITER PERDUE.");
+                window.location.reload();
             }
         }
 
-        // 3. Mettre à jour l'interface
-        function updateUI() {
-            if (currentStatus.isActive) {
+        // --- 3. BALAYAGE RADAR ---
+        async function fetchRadarData() {
+            showLoading("BALAYAGE SATELLITE EN COURS...");
+            try {
+                const response = await fetch(`${API_BASE_URL}/radar`, {
+                    headers: { 'X-PIN': userPin }
+                });
+                
+                if (!response.ok) {
+                    if(response.status === 401) throw new Error("PIN INVALIDE");
+                    throw new Error("ERREUR RADAR");
+                }
+                
+                radarChannels = await response.json();
+                renderChannelList();
+                hideLoading();
+            } catch (e) {
+                hideLoading();
+                alert(`ÉCHEC DU BALAYAGE : ${e.message}`);
+                if (e.message.includes('PIN')) window.location.reload();
+            }
+        }
+
+        // --- 4. AFFICHAGE DES SALONS ---
+        function renderChannelList() {
+            radarContainer.innerHTML = '';
+
+            if (radarChannels.length === 0) {
+                radarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--color-danger);">AUCUNE CIBLE POTENTIELLE DÉTECTÉE SUR LE RÉSEAU.</div>';
+                return;
+            }
+
+            radarChannels.forEach(channelData => {
+                const isSelected = selectedChannelIds.has(channelData.id);
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `channel-item ${isSelected ? 'selected' : ''}`;
+                itemDiv.onclick = () => toggleChannelSelection(channelData.id, itemDiv);
+
+                // Noms et utilisateurs associés
+                itemDiv.innerHTML = `
+                    <div class="channel-name">[${channelData.guild}] #${channelData.channel}</div>
+                    <div class="channel-users">Cibles exposées : ${channelData.users.join(', ')}</div>
+                    ${isSelected ? '<div style="font-size:0.7em; margin-top:5px;">[VERROUILLÉ]</div>' : ''}
+                `;
+
+                radarContainer.appendChild(itemDiv);
+            });
+        }
+
+        // --- 5. INTERACTION AVEC UN SALON ---
+        function toggleChannelSelection(channelId, element) {
+            if (selectedChannelIds.has(channelId)) {
+                selectedChannelIds.delete(channelId);
+            } else {
+                selectedChannelIds.add(channelId);
+            }
+            // Au lieu de tout re-rendre, on met juste à jour l'interface existante
+            renderChannelList(); 
+        }
+
+        // --- 6. METTRE A JOUR L'ÉTAT VISUEL DU BOUTON ---
+        function updateUIStatus() {
+            if (isSystemActive) {
                 statusText.innerText = "🚨 CIBLAGE ACTIF 🚨";
                 statusText.className = "status-active";
                 fireButton.innerText = "INITIER PROTOCOLE DE DÉSESCALADE";
@@ -266,58 +383,70 @@
                 fireButton.innerText = "ARMEZ LE SYSTÈME";
                 fireButton.className = "arm-mode";
             }
-            channelsInput.value = currentStatus.allowedChannels.join(', ');
         }
 
-        // 4. Action du gros bouton
+        // --- 7. FRAPPE STRATÉGIQUE (LE GROS BOUTON) ---
         async function toggleSystem() {
-            const newActiveState = !currentStatus.isActive;
-            const channels = channelsInput.value.split(',').map(id => id.trim()).filter(id => id);
+            const newActiveState = !isSystemActive;
+            const channelsArray = Array.from(selectedChannelIds);
 
-            if (newActiveState && channels.length === 0) {
-                alert("ERREUR : AUCUN SECTEUR DE CIBLAGE DÉFINI.");
+            if (newActiveState && channelsArray.length === 0) {
+                alert("ERREUR STRATÉGIQUE : AUCUN SECTEUR VERROUILLÉ.");
                 return;
             }
 
             const action = newActiveState ? "D'ACTIVATION" : "DE DÉSACTIVATION";
             if (!confirm(`CONFIRMER L'ORDRE ${action} DU PROTOCOLE TITI.EXE ?`)) return;
 
-            // Effet dramatique
-            loadingOverlay.classList.remove('hidden');
-            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 500]); // Vibration sur téléphone
+            showLoading(newActiveState ? "ARMEMENT DES MISSILS..." : "DÉSACTIVATION EN COURS...");
+            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 500]); // Haptique
 
             try {
                 const response = await fetch(`${API_BASE_URL}/config`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-PIN': userPin // Le PIN passe dans le header
+                        'X-PIN': userPin 
                     },
                     body: JSON.stringify({
                         isActive: newActiveState,
-                        channels: channels
+                        channels: channelsArray
                     })
                 });
 
                 const result = await response.json();
+                
                 if (result.success) {
-                    currentStatus.isActive = newActiveState;
-                    currentStatus.allowedChannels = channels;
-                    setTimeout(() => { // Pause dramatique avant mise à jour
-                        loadingOverlay.classList.add('hidden');
-                        updateUI();
+                    isSystemActive = newActiveState;
+                    setTimeout(() => { // Petite pause pour l'effet dramatique
+                        hideLoading();
+                        updateUIStatus();
                     }, 1500);
                 } else {
-                    throw new Error(result.error);
+                    throw new Error(result.error || "Réponse inattendue du serveur");
                 }
 
             } catch (e) {
-                loadingOverlay.classList.add('hidden');
+                hideLoading();
                 alert(`ÉCHEC CRITIQUE : ${e.message}`);
-                // Si erreur PIN, on reload pour sécurité
                 if (e.message.includes('PIN')) window.location.reload();
             }
         }
+
+        // --- UTILITAIRES ---
+        function showLoading(text) {
+            loadingMainText.innerText = text;
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+
+        // Permet de valider le PIN avec la touche "Entrée"
+        pinInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") authenticate();
+        });
     </script>
 </body>
 </html>
