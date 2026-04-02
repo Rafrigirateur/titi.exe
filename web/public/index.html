@@ -29,8 +29,8 @@
         .status-active { color: var(--color-danger); text-shadow: var(--glow); animation: blink 0.5s infinite; }
         .status-inactive { color: #555; }
 
-        /* --- LISTE DES SALONS --- */
-        #selected-channels-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-bottom: 10px; min-height: 150px; max-height: 30vh; }
+        /* --- LISTES ET PANNEAUX --- */
+        .panel-container { flex-grow: 1; overflow-y: auto; border: 1px solid var(--color-text); background: #0a0000; padding: 5px; margin-bottom: 10px; min-height: 100px; max-height: 25vh; }
         .channel-item { border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; display: flex; flex-direction: column; position: relative; }
         .channel-item.active-target { background: rgba(255, 0, 0, 0.1); border: 1px solid var(--color-danger); }
         .channel-name { font-weight: bold; font-size: 1.1em; padding-right: 30px; }
@@ -46,10 +46,19 @@
 
         #fire-button-container { text-align: center; flex-shrink: 0; }
         #fire-button { background-color: #330000; border: 4px solid var(--color-danger); color: var(--color-danger); font-family: 'Share Tech Mono', monospace; font-size: 1.8em; font-weight: bold; padding: 15px 30px; cursor: pointer; text-transform: uppercase; box-shadow: var(--glow); transition: all 0.2s; width: 100%; }
-        #fire-button:hover { background-color: var(--color-danger); color: var(--color-bg); box-shadow: 0 0 20px var(--color-danger); }
+        #fire-button:hover { background: var(--color-danger); color: var(--color-bg); box-shadow: 0 0 20px var(--color-danger); }
         #fire-button:active { transform: scale(0.98); }
-        #fire-button.active-mode { background-color: var(--color-bg); border-color: #444; color: #444; box-shadow: none; }
-        #fire-button.active-mode:hover { background-color: #222; }
+        #fire-button.active-mode { background: var(--color-bg); border-color: #444; color: #444; box-shadow: none; }
+        #fire-button.active-mode:hover { background: #222; }
+
+        /* --- CIBLES ET COMPTE À REBOURS --- */
+        .target-user-item { display: flex; align-items: center; border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: default; }
+        .target-user-item.clickable { cursor: pointer; }
+        .target-user-item.clickable:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
+        .target-user-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); }
+        .target-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-text); margin-right: 15px; }
+        .target-name { font-weight: bold; text-transform: none; }
+        .countdown { color: #ffaa00; font-weight: bold; }
 
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 500; backdrop-filter: blur(3px); }
@@ -59,13 +68,6 @@
         .modal-item { border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: pointer; display: flex; flex-direction: column; }
         .modal-item:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
         .modal-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); box-shadow: var(--glow); }
-
-        /* --- STRIKE TARGETING UI --- */
-        .target-user-item { display: flex; align-items: center; border: 1px dashed #550000; padding: 10px; margin-bottom: 5px; cursor: pointer; }
-        .target-user-item:hover { background: rgba(255, 0, 0, 0.1); border-color: var(--color-danger); }
-        .target-user-item.selected { background: var(--color-danger); color: var(--color-bg); border: 1px solid var(--color-danger); }
-        .target-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-text); margin-right: 15px; }
-        .target-name { font-weight: bold; text-transform: none;}
 
         input[type="text"], input[type="password"] { width: 100%; background-color: #1a0000; border: 1px solid var(--color-text); color: var(--color-danger); font-family: 'Share Tech Mono', monospace; padding: 10px; box-sizing: border-box; font-size: 1em; }
         input[type="password"] { font-size: 1.2em; text-align: center; letter-spacing: 5px; }
@@ -132,16 +134,22 @@
         </div>
 
         <div id="control-panel" class="hidden" style="display: flex; flex-direction: column; flex-grow: 1;">
+            
             <div id="status-display">
                 État du Système : <span id="status-text" class="status-inactive">STANDBY</span>
             </div>
 
-            <div class="radar-controls">
+            <div class="radar-controls" style="margin-top: 5px;">
+                <label style="color:#ffaa00;">CIBLES SOUS MALÉDICTION :</label>
+                <button class="radar-btn" onclick="fetchLiveTargets()">🔄 RAFRAÎCHIR</button>
+            </div>
+            <div id="live-targets-container" class="panel-container" style="max-height: 20vh; border-color:#ffaa00;"></div>
+
+            <div class="radar-controls" style="margin-top: 5px;">
                 <label>SECTEURS VERROUILLÉS :</label>
                 <button class="radar-btn" onclick="fetchRadarData()">📡 ACTUALISER</button>
             </div>
-
-            <div id="selected-channels-container"></div>
+            <div id="selected-channels-container" class="panel-container" style="max-height: 20vh;"></div>
 
             <button class="radar-btn add-target-btn" onclick="openRadarModal()">[+] ASSIGNER UNE NOUVELLE ZÔNE</button>
 
@@ -165,8 +173,9 @@
         let isSystemActive = false;
         let selectedChannelIds = new Set(); 
         let radarChannels = []; 
+        let liveTargetsData = [];
 
-        // Variables pour la frappe manuelle
+        // Variables Frappe Manuelle
         let strikeData = { users: [], channels: [] };
         let selectedStrikeUser = null;
         let selectedStrikeChannel = null;
@@ -180,10 +189,12 @@
         const loadingMainText = document.getElementById('loading-main-text');
         
         const selectedContainer = document.getElementById('selected-channels-container');
+        const liveTargetsContainer = document.getElementById('live-targets-container');
+        const manualStrikeContainer = document.getElementById('manual-strike-container');
+
         const radarModal = document.getElementById('radar-modal');
         const modalRadarContainer = document.getElementById('modal-radar-container');
         const modalSearchInput = document.getElementById('modal-search-input');
-        const manualStrikeContainer = document.getElementById('manual-strike-container');
         
         const strikeModal = document.getElementById('strike-modal');
         const strikeUsersContainer = document.getElementById('strike-users-container');
@@ -209,6 +220,7 @@
                 
                 updateUIStatus();
                 await fetchRadarData();
+                await fetchLiveTargets(); // Charge les cibles
             } catch (e) {
                 hideLoading();
                 alert("CONNEXION AU PC JUPITER PERDUE.");
@@ -216,31 +228,107 @@
             }
         }
 
+        // --- GESTION DES CIBLES ET COMPTE A REBOURS ---
+        async function fetchLiveTargets() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/live-targets`, { headers: { 'X-PIN': userPin } });
+                if (response.ok) {
+                    liveTargetsData = await response.json();
+                    renderLiveTargets();
+                }
+            } catch (e) {}
+        }
+
+        function renderLiveTargets() {
+            liveTargetsContainer.innerHTML = '';
+            
+            if (liveTargetsData.length === 0) {
+                liveTargetsContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUNE CIBLE ENREGISTRÉE.<br><br><i>Utilisez /malediction dans Discord pour désigner une victime.</i></div>';
+                return;
+            }
+
+            liveTargetsData.forEach(target => {
+                const div = document.createElement('div');
+                div.className = 'target-user-item';
+
+                let statusHtml = '';
+                if (!isSystemActive) {
+                    statusHtml = '<span style="color:gray;">SYSTÈME EN PAUSE</span>';
+                } else if (target.nextPingTime) {
+                    // On enregistre le timestamp dans l'attribut HTML
+                    statusHtml = `<span class="countdown" data-time="${target.nextPingTime}">CALCUL...</span>`;
+                } else {
+                    statusHtml = '<span style="color:#ffaa00;">EN ATTENTE DE SECTEUR VERROUILLÉ</span>';
+                }
+
+                div.innerHTML = `
+                    <img src="${target.avatar}" class="target-avatar">
+                    <div style="flex-grow:1;">
+                        <div class="target-name">${target.username}</div>
+                        <div style="font-size:0.85em; color:#aaa; margin-top:3px;">Impact prévu : ${statusHtml}</div>
+                    </div>
+                `;
+                liveTargetsContainer.appendChild(div);
+            });
+        }
+
+        // Tâche de fond pour animer le compte à rebours toutes les secondes
+        setInterval(() => {
+            if (!isSystemActive) return;
+            const elements = document.querySelectorAll('.countdown');
+            const now = Date.now();
+
+            elements.forEach(el => {
+                const targetTime = parseInt(el.getAttribute('data-time'));
+                if (!targetTime) return;
+
+                const diff = targetTime - now;
+                if (diff <= 0) {
+                    el.innerText = "💥 FRAPPE IMMINENTE !";
+                    el.style.color = "var(--color-danger)";
+                    el.style.animation = "blink 0.2s infinite";
+                } else {
+                    const totalSeconds = Math.floor(diff / 1000);
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
+                    
+                    let timeStr = '';
+                    if (h > 0) timeStr += `${h}h `;
+                    if (m > 0 || h > 0) timeStr += `${m}m `;
+                    timeStr += `${s}s`;
+                    
+                    el.innerText = `dans ${timeStr}`;
+                }
+            });
+        }, 1000);
+
+        // Rafraîchir les données des cibles toutes les 30s
+        setInterval(() => { if (userPin && !document.hidden) fetchLiveTargets(); }, 30000);
+
+
+        // --- GESTION RADAR & SECTEURS ---
         async function fetchRadarData() {
-            showLoading("BALAYAGE SATELLITE EN COURS...");
             try {
                 const response = await fetch(`${API_BASE_URL}/radar`, { headers: { 'X-PIN': userPin } });
-                if (!response.ok) throw new Error("ERREUR RADAR");
-                radarChannels = await response.json();
-                renderSelectedList();
-                hideLoading();
-            } catch (e) {
-                hideLoading();
-                alert(`ÉCHEC DU BALAYAGE : ${e.message}`);
-            }
+                if (response.ok) {
+                    radarChannels = await response.json();
+                    renderSelectedList();
+                }
+            } catch (e) {}
+            hideLoading();
         }
 
         function renderSelectedList() {
             selectedContainer.innerHTML = '';
             if (selectedChannelIds.size === 0) {
-                selectedContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUN SECTEUR CIBLÉ. SYSTEME INOFFENSIF.</div>';
+                selectedContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUN SECTEUR CIBLÉ.</div>';
                 return;
             }
             selectedChannelIds.forEach(id => {
                 const channelData = radarChannels.find(c => c.id === id);
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'channel-item active-target';
-
                 if (channelData) {
                     itemDiv.innerHTML = `
                         <div class="channel-name">[${channelData.guild}] #${channelData.channel}</div>
@@ -248,64 +336,36 @@
                         <button class="remove-btn" onclick="removeChannel('${id}')">X</button>
                     `;
                 } else {
-                    itemDiv.innerHTML = `
-                        <div class="channel-name" style="color:gray;">[ZÔNE RADAR INCONNUE]</div>
-                        <div class="channel-users">ID: ${id}</div>
-                        <button class="remove-btn" onclick="removeChannel('${id}')">X</button>
-                    `;
+                    itemDiv.innerHTML = `<div class="channel-name" style="color:gray;">[ZÔNE RADAR INCONNUE]</div><div class="channel-users">ID: ${id}</div><button class="remove-btn" onclick="removeChannel('${id}')">X</button>`;
                 }
                 selectedContainer.appendChild(itemDiv);
             });
         }
 
         /* --- MODAL RADAR --- */
-        function openRadarModal() {
-            radarModal.classList.remove('hidden');
-            modalSearchInput.value = '';
-            renderRadarModalList();
-        }
-
+        function openRadarModal() { radarModal.classList.remove('hidden'); modalSearchInput.value = ''; renderRadarModalList(); }
         function closeRadarModal() { radarModal.classList.add('hidden'); }
-
         function renderRadarModalList() {
             modalRadarContainer.innerHTML = '';
             const searchTerm = modalSearchInput.value.toLowerCase().trim();
+            const filteredChannels = radarChannels.filter(c => `${c.guild} ${c.channel} ${c.users.join(' ')}`.toLowerCase().includes(searchTerm));
 
-            const filteredChannels = radarChannels.filter(c => 
-                `${c.guild} ${c.channel} ${c.users.join(' ')}`.toLowerCase().includes(searchTerm)
-            );
-
-            if (filteredChannels.length === 0) {
-                modalRadarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUNE ZÔNE TROUVÉE.</div>';
-                return;
-            }
+            if (filteredChannels.length === 0) { modalRadarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUNE ZÔNE TROUVÉE.</div>'; return; }
 
             filteredChannels.forEach(c => {
                 const isSelected = selectedChannelIds.has(c.id);
                 const itemDiv = document.createElement('div');
                 itemDiv.className = `modal-item ${isSelected ? 'selected' : ''}`;
                 itemDiv.onclick = () => {
-                    if (selectedChannelIds.has(c.id)) selectedChannelIds.delete(c.id);
-                    else selectedChannelIds.add(c.id);
-                    renderSelectedList(); 
-                    renderRadarModalList(); 
-                    silentSync();
+                    if (selectedChannelIds.has(c.id)) selectedChannelIds.delete(c.id); else selectedChannelIds.add(c.id);
+                    renderSelectedList(); renderRadarModalList(); silentSync();
                 };
-
-                itemDiv.innerHTML = `
-                    <div class="channel-name">[${c.guild}] #${c.channel}</div>
-                    <div class="channel-users">Cibles exposées : ${c.users.join(', ')}</div>
-                    ${isSelected ? '<div style="font-size:0.7em; margin-top:5px;">[VERROUILLÉ]</div>' : ''}
-                `;
+                itemDiv.innerHTML = `<div class="channel-name">[${c.guild}] #${c.channel}</div><div class="channel-users">Cibles exposées : ${c.users.join(', ')}</div>${isSelected ? '<div style="font-size:0.7em; margin-top:5px;">[VERROUILLÉ]</div>' : ''}`;
                 modalRadarContainer.appendChild(itemDiv);
             });
         }
 
-        function removeChannel(channelId) {
-            selectedChannelIds.delete(channelId);
-            renderSelectedList();
-            silentSync();
-        }
+        function removeChannel(channelId) { selectedChannelIds.delete(channelId); renderSelectedList(); silentSync(); }
 
         /* --- MODAL FRAPPE MANUELLE --- */
         async function openStrikeModal() {
@@ -321,28 +381,20 @@
                 renderStrikeModal();
                 strikeModal.classList.remove('hidden');
                 hideLoading();
-            } catch (e) {
-                hideLoading();
-                alert(e.message);
-            }
+            } catch (e) { hideLoading(); alert(e.message); }
         }
 
         function closeStrikeModal() { strikeModal.classList.add('hidden'); }
-
         function renderStrikeModal() {
-            strikeUsersContainer.innerHTML = '';
-            strikeChannelsContainer.innerHTML = '';
-
+            strikeUsersContainer.innerHTML = ''; strikeChannelsContainer.innerHTML = '';
             if (strikeData.users.length === 0) {
-                strikeUsersContainer.innerHTML = '<div style="padding:10px; color:gray;">Aucune cible n\'est maudite actuellement. Utilisez /malediction sur Discord.</div>';
+                strikeUsersContainer.innerHTML = '<div style="padding:10px; color:gray;">Aucune cible n\'est maudite actuellement.</div>';
             } else {
                 strikeData.users.forEach(u => {
                     const div = document.createElement('div');
-                    div.className = `target-user-item ${selectedStrikeUser === u.id ? 'selected' : ''}`;
+                    div.className = `target-user-item clickable ${selectedStrikeUser === u.id ? 'selected' : ''}`;
                     div.onclick = () => { selectedStrikeUser = u.id; renderStrikeModal(); };
-                    
-                    const avatarUrl = u.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-                    div.innerHTML = `<img src="${avatarUrl}" class="target-avatar"><div class="target-name">${u.username}</div>`;
+                    div.innerHTML = `<img src="${u.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" class="target-avatar"><div class="target-name">${u.username}</div>`;
                     strikeUsersContainer.appendChild(div);
                 });
             }
@@ -361,50 +413,33 @@
         }
 
         async function executeStrike() {
-            if (!selectedStrikeUser || !selectedStrikeChannel) {
-                alert("VEUILLEZ SÉLECTIONNER UNE CIBLE ET UN SECTEUR.");
-                return;
-            }
-
-            closeStrikeModal();
-            showLoading("CALCUL DE LA TRAJECTOIRE...");
+            if (!selectedStrikeUser || !selectedStrikeChannel) { alert("VEUILLEZ SÉLECTIONNER UNE CIBLE ET UN SECTEUR."); return; }
+            closeStrikeModal(); showLoading("CALCUL DE LA TRAJECTOIRE...");
             if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/force-ping`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
                     body: JSON.stringify({ targetId: selectedStrikeUser, channelId: selectedStrikeChannel })
                 });
-
                 hideLoading();
-
                 if (response.ok) {
                     document.body.style.backgroundColor = "white";
                     setTimeout(() => document.body.style.backgroundColor = "var(--color-bg)", 100);
-                } else {
-                    const result = await response.json();
-                    alert(`ÉCHEC DU TIR : ${result.error}`);
-                }
-            } catch (e) {
-                hideLoading();
-                alert(`ERREUR DE CONNEXION : ${e.message}`);
-            }
+                    setTimeout(fetchLiveTargets, 1000); // Met à jour le chronomètre qui va boucler après le tir
+                } else { const result = await response.json(); alert(`ÉCHEC DU TIR : ${result.error}`); }
+            } catch (e) { hideLoading(); alert(`ERREUR DE CONNEXION : ${e.message}`); }
         }
 
         /* --- SYSTÈME GLOBAL --- */
         function updateUIStatus() {
             if (isSystemActive) {
-                statusText.innerText = "🚨 CIBLAGE ACTIF 🚨";
-                statusText.className = "status-active";
-                fireButton.innerText = "INITIER PROTOCOLE DE DÉSESCALADE";
-                fireButton.className = "active-mode";
+                statusText.innerText = "🚨 CIBLAGE ACTIF 🚨"; statusText.className = "status-active";
+                fireButton.innerText = "INITIER PROTOCOLE DE DÉSESCALADE"; fireButton.className = "active-mode";
                 manualStrikeContainer.classList.remove('hidden');
             } else {
-                statusText.innerText = "STANDBY / EN ATTENTE d'ORDRE";
-                statusText.className = "status-inactive";
-                fireButton.innerText = "ARMEZ LE SYSTÈME";
-                fireButton.className = "arm-mode";
+                statusText.innerText = "STANDBY / EN ATTENTE d'ORDRE"; statusText.className = "status-inactive";
+                fireButton.innerText = "ARMEZ LE SYSTÈME"; fireButton.className = "arm-mode";
                 manualStrikeContainer.classList.add('hidden');
             }
         }
@@ -412,12 +447,7 @@
         async function toggleSystem() {
             const newActiveState = !isSystemActive;
             const channelsArray = Array.from(selectedChannelIds);
-
-            if (newActiveState && channelsArray.length === 0) {
-                alert("ERREUR STRATÉGIQUE : AUCUN SECTEUR VERROUILLÉ.");
-                return;
-            }
-
+            if (newActiveState && channelsArray.length === 0) { alert("ERREUR STRATÉGIQUE : AUCUN SECTEUR VERROUILLÉ."); return; }
             if (!confirm(`CONFIRMER L'ORDRE ${newActiveState ? "D'ACTIVATION" : "DE DÉSACTIVATION"} ?`)) return;
 
             showLoading(newActiveState ? "ARMEMENT DES MISSILS..." : "DÉSACTIVATION EN COURS...");
@@ -425,35 +455,30 @@
 
             try {
                 const response = await fetch(`${API_BASE_URL}/config`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
                     body: JSON.stringify({ isActive: newActiveState, channels: channelsArray })
                 });
 
                 if (response.ok) {
                     isSystemActive = newActiveState;
-                    setTimeout(() => { hideLoading(); updateUIStatus(); }, 1500);
+                    setTimeout(() => { hideLoading(); updateUIStatus(); fetchLiveTargets(); }, 1500); // Actualise les cibles
                 }
-            } catch (e) {
-                hideLoading();
-                alert(`ÉCHEC CRITIQUE : ${e.message}`);
-            }
+            } catch (e) { hideLoading(); alert(`ÉCHEC CRITIQUE : ${e.message}`); }
         }
 
         async function silentSync() {
             if (!userPin) return; 
             try {
                 await fetch(`${API_BASE_URL}/config`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
                     body: JSON.stringify({ isActive: isSystemActive, channels: Array.from(selectedChannelIds) })
                 });
+                fetchLiveTargets(); // Met à jour le status de "En attente de salon" à "Calcul..." silencieusement
             } catch (e) {}
         }
 
         function showLoading(text) { loadingMainText.innerText = text; loadingOverlay.classList.remove('hidden'); }
         function hideLoading() { loadingOverlay.classList.add('hidden'); }
-
         pinInput.addEventListener("keypress", function(event) { if (event.key === "Enter") authenticate(); });
     </script>
 </body>

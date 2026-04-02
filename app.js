@@ -190,6 +190,36 @@ app.post('/dashboard/api/force-ping', async (req, res) => {
 });
 // --- FIN MODULE FRAPPE MANUELLE ---
 
+// --- DÉBUT ROUTE LIVE TARGETS ---
+app.get('/dashboard/api/live-targets', async (req, res) => {
+    const userPin = req.headers['x-pin'];
+    if (userPin !== process.env.DASHBOARD_PIN) return res.status(401).json({ error: 'Accès refusé' });
+
+    try {
+        const targets = [];
+        for (const [userId, data] of maledictionManager.cursedUsers.entries()) {
+            let username = 'Inconnu';
+            let avatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            try {
+                const u = await client.users.fetch(userId);
+                username = u.username;
+                avatar = u.displayAvatarURL({ size: 64 });
+            } catch(e) {}
+
+            targets.push({
+                id: userId,
+                username,
+                avatar,
+                nextPingTime: data ? data.nextPingTime : null
+            });
+        }
+        res.json(targets);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération des cibles" });
+    }
+});
+// --- FIN ROUTE LIVE TARGETS ---
+
 
 /**
  * Interactions endpoint URL where Discord will send HTTP requests
