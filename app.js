@@ -13,6 +13,8 @@ import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
 import { DiscordRequest, ragebaitTiti, happyTiti, randomTiti, hurtTiti } from './utils.js';
 import { initDB, incrementScore, setScore, getLeaderboard, addMessage, getScore } from './database.js';
 import { tiana } from './santee_mentale.js';
+import dashboardRouter from './web/dashboard.js';
+import { maledictionManager } from './features/malediction.js';
 
 // Create an express app
 const app = express();
@@ -22,6 +24,8 @@ const PORT = process.env.PORT || 7778;
 const lastPerduTimes = {};
 const lastCitationTimes = {};
 const lastViolenceTimes = {};
+
+app.use('/dashboard', express.json(), dashboardRouter);
 
 /**
  * debut test 
@@ -400,6 +404,36 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           content: `${await hurtTiti()} ${tiana.emojiMood()}`,
         },
       });
+    }
+
+    /**
+     * MALEDICTION
+     */
+    if (name === 'malediction') {
+        const devId = '519556904452751392'; // Sécurité : seul toi peux maudire
+        const authorId = req.body.member?.user?.id || req.body.user?.id;
+
+        if (authorId !== devId) {
+            return res.send({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: "Tu n'as pas le pouvoir d'invoquer ce mal.", flags: InteractionResponseFlags.EPHEMERAL }
+            });
+        }
+
+        const targetUserId = data.options.find(o => o.name === 'user').value;
+        
+        // Appel du manager
+        const isCursed = maledictionManager.toggleCurseOnUser(targetUserId, client);
+
+        return res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { 
+                content: isCursed 
+                    ? `<@${targetUserId}> s'est fait marabouter 🌩️` 
+                    : `<@${targetUserId}> a été libéré de la malédiction. 🕊️`,
+                flags: InteractionResponseFlags.EPHEMERAL 
+            }
+        });
     }
 
     /**

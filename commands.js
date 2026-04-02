@@ -118,8 +118,23 @@ const VIOLENCES = {
   contexts: [0, 1, 2],
 };
 
+const MALEDICTION = {
+  name: 'malediction',
+  description: 'Lance le protocole de frappe stratégique (DEV ONLY)',
+  type: 1,
+  options: [
+    {
+      type: 6, // USER
+      name: 'user',
+      description: 'La cible à marabouter',
+      required: true,
+    },
+  ],
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+};
 
 
-const ALL_COMMANDS = [PERDU, LEADERBOARD, SETSCORE_COMMAND, SUGGESTION, CITATION, VIOLENCES];
+const ALL_COMMANDS = [PERDU, LEADERBOARD, SETSCORE_COMMAND, SUGGESTION, CITATION, VIOLENCES, MALEDICTION];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

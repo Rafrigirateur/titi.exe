@@ -25,6 +25,8 @@ COPY . .
 # Votre fichier d'entrée principal semble être app.js
 CMD ["node", "app.js"]
 
+EXPOSE 7778
+
 # Si votre application Discord gère également des requêtes HTTP (ex: interactions Discord, webhooks, ou une API),
 # vous devrez exposer le port qu'elle utilise (par exemple, 3000).
 # Si c'est juste un bot qui se connecte via la librairie Discord.js, EXPOSE n'est pas strictement nécessaire.
