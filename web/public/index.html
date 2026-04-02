@@ -51,7 +51,7 @@
             box-shadow: var(--glow);
             position: relative;
             background: rgba(10, 0, 0, 0.85);
-            max-height: 90vh;
+            max-height: 95vh;
             display: flex;
             flex-direction: column;
         }
@@ -121,16 +121,23 @@
             font-size: 0.85em;
             color: #aaa;
             margin-top: 4px;
-            text-transform: none; /* Rendre les pseudos plus lisibles */
+            text-transform: none; 
         }
         
         .channel-item.selected .channel-users { color: #330000; font-weight: bold; }
 
         .radar-controls {
             display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .radar-header {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
         }
 
         .radar-btn {
@@ -143,8 +150,8 @@
         }
         .radar-btn:hover { background: var(--color-danger); color: var(--color-bg); }
 
-        /* --- FORMULAIRES --- */
-        input[type="password"] {
+        /* --- FORMULAIRES & RECHERCHE --- */
+        input[type="text"], input[type="password"] {
             width: 100%;
             background-color: #1a0000;
             border: 1px solid var(--color-text);
@@ -152,11 +159,16 @@
             font-family: 'Share Tech Mono', monospace;
             padding: 10px;
             box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        input[type="password"] {
             font-size: 1.2em;
             text-align: center;
             letter-spacing: 5px;
         }
 
+        input[type="text"]::placeholder { color: #660000; }
         input:focus { outline: none; box-shadow: var(--glow); }
 
         /* --- LE GROS BOUTON --- */
@@ -239,8 +251,11 @@
             </div>
 
             <div class="radar-controls">
-                <label>Secteurs de Ciblage Tactique :</label>
-                <button class="radar-btn" onclick="fetchRadarData()">📡 ACTUALISER LE RADAR</button>
+                <div class="radar-header">
+                    <label>Secteurs de Ciblage Tactique :</label>
+                    <button class="radar-btn" onclick="fetchRadarData()">📡 ACTUALISER</button>
+                </div>
+                <input type="text" id="search-input" placeholder="FILTRER : SERVEUR, SALON OU CIBLE..." oninput="renderChannelList()">
             </div>
 
             <div id="radar-container">
@@ -267,6 +282,7 @@
         const authSection = document.getElementById('auth-section');
         const controlPanel = document.getElementById('control-panel');
         const pinInput = document.getElementById('pin-input');
+        const searchInput = document.getElementById('search-input');
         const statusText = document.getElementById('status-text');
         const fireButton = document.getElementById('fire-button');
         const radarContainer = document.getElementById('radar-container');
@@ -280,7 +296,6 @@
             
             showLoading("DÉVERROUILLAGE SÉCURISÉ...");
             
-            // On masque l'authentification et on charge les données
             authSection.classList.add('hidden');
             controlPanel.classList.remove('hidden');
             
@@ -290,7 +305,6 @@
         // --- 2. INITIALISATION DU DASHBOARD ---
         async function initDashboard() {
             try {
-                // Récupère d'abord l'état actuel de la malédiction
                 const statusRes = await fetch(`${API_BASE_URL}/status`);
                 if (!statusRes.ok) throw new Error("Erreur de liaison");
                 const statusData = await statusRes.json();
@@ -299,8 +313,6 @@
                 selectedChannelIds = new Set(statusData.allowedChannels);
                 
                 updateUIStatus();
-
-                // Ensuite, on lance le scan radar pour peupler l'interface
                 await fetchRadarData();
             } catch (e) {
                 hideLoading();
@@ -332,23 +344,35 @@
             }
         }
 
-        // --- 4. AFFICHAGE DES SALONS ---
+        // --- 4. AFFICHAGE ET FILTRAGE DES SALONS ---
         function renderChannelList() {
             radarContainer.innerHTML = '';
+            const searchTerm = searchInput.value.toLowerCase().trim();
 
             if (radarChannels.length === 0) {
                 radarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--color-danger);">AUCUNE CIBLE POTENTIELLE DÉTECTÉE SUR LE RÉSEAU.</div>';
                 return;
             }
 
-            radarChannels.forEach(channelData => {
+            // Filtrer les données en fonction de la recherche globale
+            const filteredChannels = radarChannels.filter(channelData => {
+                const searchableText = `${channelData.guild} ${channelData.channel} ${channelData.users.join(' ')}`.toLowerCase();
+                return searchableText.includes(searchTerm);
+            });
+
+            if (filteredChannels.length === 0) {
+                radarContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">AUCUN SECTEUR NE CORRESPOND AUX CRITÈRES DE RECHERCHE.</div>';
+                return;
+            }
+
+            // Afficher les résultats filtrés
+            filteredChannels.forEach(channelData => {
                 const isSelected = selectedChannelIds.has(channelData.id);
                 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = `channel-item ${isSelected ? 'selected' : ''}`;
                 itemDiv.onclick = () => toggleChannelSelection(channelData.id, itemDiv);
 
-                // Noms et utilisateurs associés
                 itemDiv.innerHTML = `
                     <div class="channel-name">[${channelData.guild}] #${channelData.channel}</div>
                     <div class="channel-users">Cibles exposées : ${channelData.users.join(', ')}</div>
@@ -366,7 +390,6 @@
             } else {
                 selectedChannelIds.add(channelId);
             }
-            // Au lieu de tout re-rendre, on met juste à jour l'interface existante
             renderChannelList(); 
         }
 
@@ -418,7 +441,7 @@
                 
                 if (result.success) {
                     isSystemActive = newActiveState;
-                    setTimeout(() => { // Petite pause pour l'effet dramatique
+                    setTimeout(() => { 
                         hideLoading();
                         updateUIStatus();
                     }, 1500);
@@ -443,7 +466,6 @@
             loadingOverlay.classList.add('hidden');
         }
 
-        // Permet de valider le PIN avec la touche "Entrée"
         pinInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") authenticate();
         });
