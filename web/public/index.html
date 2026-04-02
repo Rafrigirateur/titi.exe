@@ -496,6 +496,36 @@
         pinInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") authenticate();
         });
+
+        // --- SYNCHRONISATION SILENCIEUSE (AJOUT) ---
+        async function silentSync() {
+            if (!userPin) return; // Ne fait rien si pas connecté
+            const channelsArray = Array.from(selectedChannelIds);
+            try {
+                await fetch(`${API_BASE_URL}/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-PIN': userPin },
+                    body: JSON.stringify({ isActive: isSystemActive, channels: channelsArray })
+                });
+            } catch (e) {
+                console.error("Erreur de synchronisation radar");
+            }
+        }
+
+        // --- MODIFICATION DES FONCTIONS EXISTANTES ---
+        function toggleChannelSelection(channelId) {
+            if (selectedChannelIds.has(channelId)) selectedChannelIds.delete(channelId);
+            else selectedChannelIds.add(channelId);
+            renderSelectedList(); 
+            renderModalList(); 
+            silentSync(); // 👈 Met à jour le serveur instantanément
+        }
+
+        function removeChannel(channelId) {
+            selectedChannelIds.delete(channelId);
+            renderSelectedList();
+            silentSync(); // 👈 Met à jour le serveur instantanément
+        }
     </script>
 </body>
 </html>

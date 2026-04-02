@@ -1,72 +1,107 @@
-// features/malediction.js
 import { randomTiti } from '../utils.js';
+import { getMaledictionState, saveMaledictionState } from '../database.js';
 
 class MaledictionManager {
     constructor() {
         this.isActive = false;
-        this.allowedChannels = []; // Rempli via le dashboard web
+        this.allowedChannels = [];
         this.cursedUsers = new Map(); // Stocke : userId -> timeoutId
+        this.client = null; // Garde une référence du bot pour relancer les pings
     }
 
-    // Fonction appelée par le dashboard
-    updateConfig(isActive, channels) {
-        this.isActive = isActive;
-        this.allowedChannels = channels;
-        console.log(`[Malédiction] Statut: ${this.isActive ? 'ALLUMÉ' : 'ÉTEINT'}, Salons: ${this.allowedChannels.length}`);
+    // Appelée au démarrage de l'app
+    async init(client) {
+        this.client = client;
+        const state = await getMaledictionState();
+        this.isActive = state.isActive;
+        this.allowedChannels = state.allowedChannels;
         
-        // Si on éteint, on coupe tous les timers en cours
-        if (!this.isActive) this.clearAllCurses();
-    }
+        console.log(`[Jupiter] Démarrage... Statut: ${this.isActive ? 'ALLUMÉ' : 'ÉTEINT'}, Salons: ${this.allowedChannels.length}, Cibles: ${state.cursedUsers.length}`);
 
-    // Fonction appelée par la commande Discord /malediction
-    toggleCurseOnUser(userId, client) {
-        if (this.cursedUsers.has(userId)) {
-            // L'utilisateur est déjà maudit, on le libère
-            clearTimeout(this.cursedUsers.get(userId));
-            this.cursedUsers.delete(userId);
-            return false; // Indique qu'il n'est plus maudit
-        } else {
-            // On le maudit
-            this.scheduleNextPing(userId, client);
-            return true; // Indique qu'il est maudit
+        // Restaurer les joueurs maudits depuis la DB
+        for (const userId of state.cursedUsers) {
+            if (this.isActive) {
+                this.scheduleNextPing(userId); // Relance les timers
+            } else {
+                this.cursedUsers.set(userId, null); // Ajouté en pause
+            }
         }
     }
 
-    async scheduleNextPing(userId, client) {
+    // Synchronise la RAM vers SQLite
+    async syncDB() {
+        const cursedArray = Array.from(this.cursedUsers.keys());
+        await saveMaledictionState(this.isActive, this.allowedChannels, cursedArray);
+    }
+
+    // Fonction appelée par le dashboard web
+    async updateConfig(isActive, channels) {
+        this.isActive = isActive;
+        this.allowedChannels = channels;
+        console.log(`[Jupiter] Mise à jour - Statut: ${this.isActive ? 'ALLUMÉ' : 'ÉTEINT'}`);
+        
+        if (!this.isActive) {
+            this.pauseAllCurses(); // Met en pause sans supprimer les joueurs
+        } else {
+            this.resumeAllCurses(); // Relance le feu
+        }
+        await this.syncDB();
+    }
+
+    // Fonction appelée par la commande Discord /malediction
+    async toggleCurseOnUser(userId) {
+        if (this.cursedUsers.has(userId)) {
+            clearTimeout(this.cursedUsers.get(userId));
+            this.cursedUsers.delete(userId);
+            await this.syncDB();
+            return false; // N'est plus maudit
+        } else {
+            if (this.isActive) {
+                this.scheduleNextPing(userId);
+            } else {
+                this.cursedUsers.set(userId, null);
+            }
+            await this.syncDB();
+            return true; // Est maudit
+        }
+    }
+
+    scheduleNextPing(userId) {
         if (!this.isActive || this.allowedChannels.length === 0) return;
 
-        // Délai aléatoire (ex: entre 30 min et 2 heures)
         const minDelay = 30 * 60 * 1000;
         const maxDelay = 120 * 60 * 1000;
         const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 
         const timeoutId = setTimeout(async () => {
             try {
-                // Choisit un salon aléatoire parmi ceux autorisés
                 const channelId = this.allowedChannels[Math.floor(Math.random() * this.allowedChannels.length)];
-                const channel = await client.channels.fetch(channelId);
+                const channel = await this.client.channels.fetch(channelId);
 
                 if (channel && channel.isTextBased()) {
                     const message = await randomTiti();
                     await channel.send(`<@${userId}> ${message}`);
                 }
             } catch (error) {
-                console.error("[Malédiction] Erreur de ping :", error);
+                console.error("[Jupiter] Erreur de ping :", error);
             }
-
-            // On relance la boucle pour ce joueur
-            this.scheduleNextPing(userId, client);
+            this.scheduleNextPing(userId); // Boucle
         }, delay);
 
-        // On sauvegarde le timeout pour pouvoir l'annuler si besoin
         this.cursedUsers.set(userId, timeoutId);
     }
 
-    clearAllCurses() {
-        for (let timeoutId of this.cursedUsers.values()) {
+    pauseAllCurses() {
+        for (let [userId, timeoutId] of this.cursedUsers.entries()) {
             clearTimeout(timeoutId);
+            this.cursedUsers.set(userId, null);
         }
-        this.cursedUsers.clear();
+    }
+
+    resumeAllCurses() {
+        for (let [userId, timeoutId] of this.cursedUsers.entries()) {
+            if (!timeoutId) this.scheduleNextPing(userId);
+        }
     }
 }
 

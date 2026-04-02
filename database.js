@@ -27,6 +27,16 @@ export async function initDB() {
       change_time DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS malediction_state (
+      id INTEGER PRIMARY KEY CHECK(id = 1),
+      is_active INTEGER DEFAULT 0,
+      allowed_channels TEXT DEFAULT '[]',
+      cursed_users TEXT DEFAULT '[]'
+    );
+  `);
+  // On insère la ligne par défaut si elle n'existe pas
+  await db.run(`INSERT OR IGNORE INTO malediction_state (id, is_active, allowed_channels, cursed_users) VALUES (1, 0, '[]', '[]')`);
   console.log("✅ Base de données initialisée");
 }
 
@@ -166,4 +176,22 @@ export async function getScoreLogs(limit = 100) {
     limit
   );
   return rows;
+}
+
+export async function getMaledictionState() {
+  const db = await dbPromise;
+  const row = await db.get('SELECT is_active, allowed_channels, cursed_users FROM malediction_state WHERE id = 1');
+  return {
+    isActive: row.is_active === 1,
+    allowedChannels: JSON.parse(row.allowed_channels),
+    cursedUsers: JSON.parse(row.cursed_users)
+  };
+}
+
+export async function saveMaledictionState(isActive, allowedChannels, cursedUsers) {
+  const db = await dbPromise;
+  await db.run(
+    'UPDATE malediction_state SET is_active = ?, allowed_channels = ?, cursed_users = ? WHERE id = 1',
+    [isActive ? 1 : 0, JSON.stringify(allowedChannels), JSON.stringify(cursedUsers)]
+  );
 }

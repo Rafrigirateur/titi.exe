@@ -56,9 +56,10 @@ async function updateDiscordStatus() {
 tiana.onUpdate = updateDiscordStatus;
 
 // Connexion à Discord
-client.once('ready', () => {
+client.once('ready', async () => {
   console.log(`✅ Connecté en tant que ${client.user.tag} pour la gestion du statut.`);
-  updateDiscordStatus(); // Mise à jour immédiate au lancement
+  updateDiscordStatus(); 
+  await maledictionManager.init(client); 
 });
 
 // IMPORTANT : Assure-toi que DISCORD_TOKEN est dans ton fichier .env
@@ -517,7 +518,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         const targetUserId = data.options.find(o => o.name === 'user').value;
         
         // Appel du manager
-        const isCursed = maledictionManager.toggleCurseOnUser(targetUserId, client);
+        const isCursed = await maledictionManager.toggleCurseOnUser(targetUserId);
 
         return res.send({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
